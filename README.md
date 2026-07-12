@@ -59,6 +59,21 @@ Notes:
 - Email/OTP stays disabled until `EMAIL_SENDER_ADDRESS`/`EMAIL_SENDER_PASSWORD` are set (Gmail app password); everything else runs without it.
 - Data persists in the `mssql-data` and `screenshots` named volumes across rebuilds.
 
+### Deploy to foodpower.runasp.net (WebDeploy)
+
+A publish profile is included at `backend/FoodPower/Properties/PublishProfiles/foodpower-runasp.pubxml` (password intentionally not stored — the profile is committed to git). Deploy from a Windows terminal:
+
+```powershell
+cd backend/FoodPower
+dotnet publish -c Release /p:PublishProfile=foodpower-runasp /p:Password=<userPWD from the .publishSettings file>
+```
+
+Requires Web Deploy 3.6+ on your machine (or publish from Rider/VS with the same profile). Notes:
+
+- Set runtime configuration on the host (MonsterASP panel → site → Environment variables): `DB_CONNECTION_STRING` (MonsterASP's own SQL Server database works), `EMAIL_*`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`, `JWT_SECRET`, and `FRONTEND_BASE_URL` (where the frontend is hosted — used for links in poll emails).
+- Migrations run themselves: on every startup the app applies pending EF migrations (`Database.Migrate()`) when migrations exist, otherwise creates the schema (`EnsureCreated`), then runs the idempotent seeding. Add a migration locally, deploy, done.
+- After first deploy, log in as admin → Settings and fill in the bKash number and bank account — they show on the Payments screen and in poll emails.
+
 ### Docker (single image) / Render
 
 To build and run just the API image against an external SQL Server:
@@ -91,7 +106,9 @@ npm run dev
 - One vote per user per poll; changeable until the cutoff; blocked after. Late lunches are added by the admin ("manual vote"), which increases the user's due like a normal vote.
 - Due = (lunches taken × poll price) − approved payments. Overpayment is kept as advance and consumed by future lunches.
 - One payment can cover multiple people: pick beneficiaries and days per person; the server computes the amount. Admin approves/rejects with the screenshot as evidence.
-- Poll publish notifies all active users in-app and produces a public share link (`/poll/<token>`) for WhatsApp.
+- Poll publish notifies all active users in-app and produces a public share link (`/poll/<token>`) for WhatsApp. The admin can additionally email everyone on demand ("Send email to everyone" in Manage votes): vote link + cutoff in Dhaka time + weekly payment reminder with bKash/bank details from Settings.
+- Votes can be removed ("unvote") until the cutoff; after that, only the admin can change anything.
+- All times are Bangladesh time (Asia/Dhaka) — cutoff interpretation on the server and every date/time shown in the UI, regardless of the viewer's browser timezone.
 - Cutoff time (default 10:00), price per lunch and timezone are admin-configurable in Settings; per-poll cutoff can be overridden at publish time.
 - Bangla text is safe end-to-end (nvarchar columns, UTF-8 email); UI language auto-detects the browser and can be toggled EN/বাং.
 

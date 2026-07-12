@@ -17,7 +17,9 @@ namespace FoodPower.Features.Settings.SettingsHandlers;
 public record UpdateSettingsCommand(
     string? PricePerLunch,
     string? DefaultCutoffTime,
-    string? TimeZone
+    string? TimeZone,
+    string? BkashNumber,
+    string? BankAccount
 ) : IRequest<ErrorOr<SettingsResponse>>;
 
 public class UpdateSettingsCommandValidator : AbstractValidator<UpdateSettingsCommand>
@@ -75,6 +77,17 @@ public class UpdateSettingsCommandHandler(ISettingsRepository settingsRepository
             await settingsRepository.UpsertAsync(SettingKeys.TimeZone, command.TimeZone.Trim(), cancellationToken);
         }
 
+        // Payment details are plain strings; an explicit empty string clears them.
+        if (command.BkashNumber != null)
+        {
+            await settingsRepository.UpsertAsync(SettingKeys.BkashNumber, command.BkashNumber.Trim(), cancellationToken);
+        }
+
+        if (command.BankAccount != null)
+        {
+            await settingsRepository.UpsertAsync(SettingKeys.BankAccount, command.BankAccount.Trim(), cancellationToken);
+        }
+
         var settings = await settingsRepository.GetAllAsync(cancellationToken);
 
         var priceValue = settings.GetValueOrDefault(SettingKeys.PricePerLunch, SettingKeys.DefaultPricePerLunch);
@@ -86,6 +99,8 @@ public class UpdateSettingsCommandHandler(ISettingsRepository settingsRepository
         return new SettingsResponse(
             price_per_lunch: priceValue,
             default_cutoff_time: settings.GetValueOrDefault(SettingKeys.DefaultCutoffTime, SettingKeys.DefaultCutoffTimeValue),
-            time_zone: settings.GetValueOrDefault(SettingKeys.TimeZone, SettingKeys.DefaultTimeZone));
+            time_zone: settings.GetValueOrDefault(SettingKeys.TimeZone, SettingKeys.DefaultTimeZone),
+            bkash_number: settings.GetValueOrDefault(SettingKeys.BkashNumber, SettingKeys.DefaultBkashNumber),
+            bank_account: settings.GetValueOrDefault(SettingKeys.BankAccount, SettingKeys.DefaultBankAccount));
     }
 }

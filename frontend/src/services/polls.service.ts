@@ -58,3 +58,8 @@ export const closePoll = async (pollId: number): Promise<ApiResponse> => {
     const response = await axiosClient.post(`/api/polls/${pollId}/close`);
     return response.data;
 };
+
+export const sendPollEmails = async (pollId: number): Promise<ApiResponse<{ message: string }>> => {
+    const response = await axiosClient.post(`/api/polls/${pollId}/send-emails`);
+    return response.data;
+};

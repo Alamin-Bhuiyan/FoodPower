@@ -13,7 +13,7 @@ import CatererSheet from '@/components/menu/CatererSheet';
 import * as menuService from '@/services/menu.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { isAdmin } from '@/lib/auth';
-import { formatBDT } from '@/lib/format';
+import { formatBDT, dhakaDayOfWeek } from '@/lib/format';
 import { DAYS_OF_WEEK, WORK_DAYS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { MenuItem } from '@/types';
@@ -102,7 +102,7 @@ const Menu = () => {
         setEdit({ open: true, day, item });
     };
 
-    const today = new Date().getDay();
+    const today = dhakaDayOfWeek();
     const weekendDays = DAYS_OF_WEEK.filter(d => !WORK_DAYS.includes(d.value));
 
     if (caterersLoading) {

@@ -159,4 +159,6 @@ export interface AppSettings {
     default_cutoff_time: string; // "10:00"
     price_per_lunch: string;     // "120"
     time_zone: string;           // "Asia/Dhaka"
+    bkash_number?: string;       // bKash Send Money number (may be empty)
+    bank_account?: string;       // bank account details (may be empty)
 }

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import UserAvatar from '@/components/common/UserAvatar';
+import WhereToPayCard from '@/components/payments/WhereToPayCard';
 import * as usersService from '@/services/users.service';
 import * as paymentsService from '@/services/payments.service';
 import * as settingsService from '@/services/settings.service';
@@ -169,6 +170,9 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
                         <span className="text-sm font-semibold text-foreground">{t('submitPayment.totalToPay')}</span>
                         <span className="text-lg font-extrabold text-primary tabular-nums">{formatBDT(totalAmount)}</span>
                     </div>
+
+                    {/* Where to pay */}
+                    <WhereToPayCard />
 
                     {/* Screenshot */}
                     <div className="space-y-2">

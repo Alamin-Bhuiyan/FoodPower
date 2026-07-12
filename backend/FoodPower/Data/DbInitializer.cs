@@ -109,7 +109,9 @@ public static class DbInitializer
         {
             [SettingKeys.PricePerLunch] = SettingKeys.DefaultPricePerLunch,
             [SettingKeys.DefaultCutoffTime] = SettingKeys.DefaultCutoffTimeValue,
-            [SettingKeys.TimeZone] = SettingKeys.DefaultTimeZone
+            [SettingKeys.TimeZone] = SettingKeys.DefaultTimeZone,
+            [SettingKeys.BkashNumber] = SettingKeys.DefaultBkashNumber,
+            [SettingKeys.BankAccount] = SettingKeys.DefaultBankAccount
         };
 
         foreach (var (key, value) in defaults)

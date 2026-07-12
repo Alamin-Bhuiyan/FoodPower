@@ -82,7 +82,7 @@
     "closePollSuffix": "· পোল বন্ধ",
     "yourVote": "আপনার ভোট:",
     "tapToChange": " — পরিবর্তন করতে অন্য অপশনে চাপ দিন।",
-    "removeVote": "আমার ভোট সরিয়ে ফেলুন",
+    "removeVote": "ভোট তুলে নিন",
     "voteRemoved": "আপনার ভোট সরিয়ে ফেলা হয়েছে।",
     "removeVoteFailed": "ভোট সরানো যায়নি",
     "shareText": "🍱 {{date}} তারিখের লাঞ্চ পোল — এখানে ভোট দিন: {{url}}",
@@ -143,7 +143,11 @@
     "days_one": "{{count}} দিন",
     "days_other": "{{count}} দিন",
     "userNumber": "ব্যবহারকারী #{{id}}",
-    "screenshotAlt": "পেমেন্টের স্ক্রিনশট"
+    "screenshotAlt": "পেমেন্টের স্ক্রিনশট",
+    "whereToPay": "কোথায় পেমেন্ট করবেন",
+    "bkash": "বিকাশ",
+    "sendMoneyNote": "সেন্ড মানি (ক্যাশ-আউট চার্জসহ পাঠান)",
+    "bankAccount": "ব্যাংক অ্যাকাউন্ট"
   },
   "submitPayment": {
     "title": "পেমেন্ট জমা দিন",
@@ -215,6 +219,12 @@
     "priceLabel": "প্রতি লাঞ্চের দাম (টাকা)",
     "priceHelp": "প্রতিটি পোলে দাম সংরক্ষিত থাকে — পরিবর্তন করলে আগের পোলে প্রভাব পড়বে না।",
     "timezone": "টাইমজোন",
+    "bkashLabel": "বিকাশ নম্বর (সেন্ড মানি)",
+    "bkashHelp": "পেমেন্ট পেজে সবাই দেখতে পাবেন। খালি রাখলে দেখানো হবে না।",
+    "bkashPlaceholder": "যেমন: 017xxxxxxxx",
+    "bankLabel": "ব্যাংক অ্যাকাউন্ট",
+    "bankHelp": "পেমেন্ট পেজে সবাই দেখতে পাবেন। খালি রাখলে দেখানো হবে না।",
+    "bankPlaceholder": "যেমন: সিটি ব্যাংক 1234567890, রহিম উদ্দিন",
     "saveSettings": "সেটিংস সংরক্ষণ"
   },
   "sharedPoll": {
@@ -267,7 +277,14 @@
     "voteAddedToast": "ভোট যোগ করা হয়েছে — ব্যবহারকারীকে জানানো হয়েছে।",
     "addVoteFailed": "ভোট যোগ করা যায়নি",
     "pollClosedToast": "পোল বন্ধ করা হয়েছে।",
-    "closeFailed": "পোল বন্ধ করা যায়নি"
+    "closeFailed": "পোল বন্ধ করা যায়নি",
+    "sendEmails": "সবাইকে ইমেইল পাঠান",
+    "sendingEmails": "পাঠানো হচ্ছে…",
+    "sendEmailsConfirmTitle": "সবাইকে পোলের ইমেইল পাঠাবেন?",
+    "sendEmailsConfirmBody": "নিশ্চিত ইমেইলসহ সকল সক্রিয় ব্যবহারকারী ভোটের লিংক ও পেমেন্ট তথ্যসহ পোলের ইমেইল পাবেন।",
+    "sendEmailsConfirmAction": "ইমেইল পাঠান",
+    "emailsSendingToast": "ইমেইল পাঠানো হচ্ছে।",
+    "sendEmailsFailed": "ইমেইল পাঠানো যায়নি"
   },
   "auth": {
     "login": {

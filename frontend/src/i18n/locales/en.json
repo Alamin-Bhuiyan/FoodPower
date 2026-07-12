@@ -143,7 +143,11 @@
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "userNumber": "User #{{id}}",
-    "screenshotAlt": "Payment screenshot"
+    "screenshotAlt": "Payment screenshot",
+    "whereToPay": "Where to pay",
+    "bkash": "bKash",
+    "sendMoneyNote": "Send Money (include cash-out charge)",
+    "bankAccount": "Bank account"
   },
   "submitPayment": {
     "title": "Submit payment",
@@ -215,6 +219,12 @@
     "priceLabel": "Price per lunch (BDT)",
     "priceHelp": "Snapshotted on every poll — changing it does not affect past polls.",
     "timezone": "Timezone",
+    "bkashLabel": "bKash number (Send Money)",
+    "bkashHelp": "Shown to everyone on the Payments page. Leave empty to hide.",
+    "bkashPlaceholder": "e.g. 017xxxxxxxx",
+    "bankLabel": "Bank account",
+    "bankHelp": "Shown to everyone on the Payments page. Leave empty to hide.",
+    "bankPlaceholder": "e.g. City Bank 1234567890, Rahim Uddin",
     "saveSettings": "Save settings"
   },
   "sharedPoll": {
@@ -267,7 +277,14 @@
     "voteAddedToast": "Vote added — the user has been notified.",
     "addVoteFailed": "Failed to add vote",
     "pollClosedToast": "Poll closed.",
-    "closeFailed": "Failed to close poll"
+    "closeFailed": "Failed to close poll",
+    "sendEmails": "Send email to everyone",
+    "sendingEmails": "Sending…",
+    "sendEmailsConfirmTitle": "Send poll email to everyone?",
+    "sendEmailsConfirmBody": "Every active user with a confirmed email will receive the poll email with the voting link and payment info.",
+    "sendEmailsConfirmAction": "Send emails",
+    "emailsSendingToast": "Emails are being sent.",
+    "sendEmailsFailed": "Failed to send emails"
   },
   "auth": {
     "login": {

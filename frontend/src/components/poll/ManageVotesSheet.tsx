@@ -2,8 +2,18 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Loader2, UserPlus, Lock } from 'lucide-react';
+import { Loader2, UserPlus, Lock, Mail } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import UserAvatar from '@/components/common/UserAvatar';
@@ -25,6 +35,7 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
     const queryClient = useQueryClient();
     const [manualUserId, setManualUserId] = useState<string>('');
     const [manualOptionId, setManualOptionId] = useState<string>('');
+    const [emailConfirmOpen, setEmailConfirmOpen] = useState(false);
 
     const { data: usersRes } = useQuery({
         queryKey: ['users'],
@@ -55,6 +66,14 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
             invalidate();
         },
         onError: (error: any) => toast.error(getErrorMessage(error, t('manageVotes.addVoteFailed')), { duration: 6000 }),
+    });
+
+    const sendEmailsMutation = useMutation({
+        mutationFn: () => pollsService.sendPollEmails(poll.id),
+        onSuccess: (res) => {
+            toast.success(res.data?.message || t('manageVotes.emailsSendingToast'));
+        },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('manageVotes.sendEmailsFailed')), { duration: 6000 }),
     });
 
     const closeMutation = useMutation({
@@ -147,6 +166,18 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                         </div>
                     )}
 
+                    {/* Send poll emails (allowed for open and closed polls) */}
+                    <Button
+                        variant="outline"
+                        className="w-full h-11 rounded-xl font-semibold bg-card"
+                        disabled={sendEmailsMutation.isPending}
+                        onClick={() => setEmailConfirmOpen(true)}
+                    >
+                        {sendEmailsMutation.isPending
+                            ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.sendingEmails')}</>)
+                            : (<><Mail className="h-4 w-4" /> {t('manageVotes.sendEmails')}</>)}
+                    </Button>
+
                     {/* Close poll */}
                     {isPollOpen && (
                         <Button
@@ -161,6 +192,26 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                         </Button>
                     )}
                 </div>
+
+                <AlertDialog open={emailConfirmOpen} onOpenChange={setEmailConfirmOpen}>
+                    <AlertDialogContent className="rounded-2xl max-w-[calc(100%-2rem)]">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{t('manageVotes.sendEmailsConfirmTitle')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {t('manageVotes.sendEmailsConfirmBody')}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel className="rounded-xl">{t('common.cancel')}</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="rounded-xl"
+                                onClick={() => sendEmailsMutation.mutate()}
+                            >
+                                {t('manageVotes.sendEmailsConfirmAction')}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </SheetContent>
         </Sheet>
     );

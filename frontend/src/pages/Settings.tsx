@@ -12,13 +12,15 @@ import * as settingsService from '@/services/settings.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { isAdmin } from '@/lib/auth';
 
-/** Admin-only app settings: default cutoff time, price per lunch, timezone. */
+/** Admin-only app settings: default cutoff time, price per lunch, timezone, payment details. */
 const Settings = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [cutoff, setCutoff] = useState('');
     const [price, setPrice] = useState('');
     const [timeZone, setTimeZone] = useState('');
+    const [bkashNumber, setBkashNumber] = useState('');
+    const [bankAccount, setBankAccount] = useState('');
 
     const { data: settingsRes, isLoading } = useQuery({
         queryKey: ['settings'],
@@ -31,6 +33,8 @@ const Settings = () => {
             setCutoff(s.default_cutoff_time ?? '10:00');
             setPrice(String(s.price_per_lunch ?? '120'));
             setTimeZone(s.time_zone ?? 'Asia/Dhaka');
+            setBkashNumber(s.bkash_number ?? '');
+            setBankAccount(s.bank_account ?? '');
         }
     }, [settingsRes]);
 
@@ -39,6 +43,8 @@ const Settings = () => {
             default_cutoff_time: cutoff,
             price_per_lunch: price,
             time_zone: timeZone,
+            bkash_number: bkashNumber.trim(),
+            bank_account: bankAccount.trim(),
         }),
         onSuccess: () => {
             toast.success(t('toasts.updated'));
@@ -85,6 +91,22 @@ const Settings = () => {
                 <div className="space-y-1.5">
                     <Label>{t('settings.timezone')}</Label>
                     <Input value={timeZone} onChange={e => setTimeZone(e.target.value)} placeholder="Asia/Dhaka" className="h-11 rounded-xl" />
+                </div>
+
+                <div className="space-y-1.5">
+                    <Label>{t('settings.bkashLabel')}</Label>
+                    <Input inputMode="tel" value={bkashNumber} onChange={e => setBkashNumber(e.target.value)} placeholder={t('settings.bkashPlaceholder')} className="h-11 rounded-xl" />
+                    <p className="text-[11px] text-muted-foreground">
+                        {t('settings.bkashHelp')}
+                    </p>
+                </div>
+
+                <div className="space-y-1.5">
+                    <Label>{t('settings.bankLabel')}</Label>
+                    <Input value={bankAccount} onChange={e => setBankAccount(e.target.value)} placeholder={t('settings.bankPlaceholder')} className="h-11 rounded-xl" />
+                    <p className="text-[11px] text-muted-foreground">
+                        {t('settings.bankHelp')}
+                    </p>
                 </div>
 
                 <Button

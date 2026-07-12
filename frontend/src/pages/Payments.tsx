@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import StatusBadge from '@/components/common/StatusBadge';
 import SubmitPaymentSheet from '@/components/payments/SubmitPaymentSheet';
+import WhereToPayCard from '@/components/payments/WhereToPayCard';
 import UserAvatar from '@/components/common/UserAvatar';
 import * as paymentsService from '@/services/payments.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
@@ -168,6 +169,8 @@ const Payments = () => {
             >
                 <Plus className="h-4 w-4" /> {t('payments.submitPayment')}
             </Button>
+
+            <WhereToPayCard />
 
             {admin ? (
                 <Tabs defaultValue="my">

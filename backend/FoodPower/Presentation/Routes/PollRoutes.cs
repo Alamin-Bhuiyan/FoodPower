@@ -37,4 +37,8 @@ public class PollRoutes
     public const string ClosePollMethod = "POST";
     public const string ClosePollName = "foodpower.polls.close";
     public const string ClosePollTemplate = "/api/polls/{id}/close";
+
+    public const string SendPollEmailsMethod = "POST";
+    public const string SendPollEmailsName = "foodpower.polls.send_poll_emails";
+    public const string SendPollEmailsTemplate = "/api/polls/{id}/send-emails";
 }

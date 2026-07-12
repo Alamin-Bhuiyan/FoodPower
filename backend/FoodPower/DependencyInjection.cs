@@ -121,6 +121,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAuthUser, AuthUser>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IPollEmailService, PollEmailService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<INotificationService, NotificationService>();
 

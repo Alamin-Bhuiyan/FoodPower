@@ -1,6 +1,9 @@
 import { PAYMENT_STATUS, POLL_STATUS } from './constants';
 import { dateLocale } from '@/i18n';
 
+/** All dates/times are displayed in Bangladesh time, regardless of the viewer's browser timezone. */
+const TIME_ZONE = 'Asia/Dhaka';
+
 /** Format an amount in BDT, e.g. "৳120.00". */
 export const formatBDT = (amount: number | string | null | undefined): string => {
     const n = Number(amount ?? 0);
@@ -15,28 +18,28 @@ export const formatDate = (value?: string | null): string => {
     if (!value) return '—';
     const d = new Date(value);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString(dateLocale(), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: TIME_ZONE });
 };
 
 export const formatDateShort = (value?: string | null): string => {
     if (!value) return '—';
     const d = new Date(value);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', timeZone: TIME_ZONE });
 };
 
 export const formatDateTime = (value?: string | null): string => {
     if (!value) return '—';
     const d = new Date(value);
     if (isNaN(d.getTime())) return '—';
-    return `${d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })}, ${d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit', hour12: false })}`;
+    return `${d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', timeZone: TIME_ZONE })}, ${d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIME_ZONE })}`;
 };
 
 export const formatTime = (value?: string | null): string => {
     if (!value) return '—';
     const d = new Date(value);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit', hour12: false });
+    return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIME_ZONE });
 };
 
 /** Normalize a payment/poll status that may arrive as a string or an enum int. */
@@ -57,6 +60,12 @@ export const pollStatusLabel = (status: string | number | undefined | null): str
         case 1: return POLL_STATUS.CLOSED;
         default: return String(status ?? '');
     }
+};
+
+/** Day of week (0 = Sunday … 6 = Saturday) for "now" in Bangladesh time. */
+export const dhakaDayOfWeek = (): number => {
+    const wd = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: TIME_ZONE }).format(new Date());
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(wd);
 };
 
 /** yyyy-MM-dd for date inputs / API query params (local time). */

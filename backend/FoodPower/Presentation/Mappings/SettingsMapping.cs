@@ -12,7 +12,9 @@ public class SettingsMapping : IRegister
             .ConstructUsing(src => new UpdateSettingsCommand(
                 src.price_per_lunch,
                 src.default_cutoff_time,
-                src.time_zone
+                src.time_zone,
+                src.bkash_number,
+                src.bank_account
             ));
     }
 }

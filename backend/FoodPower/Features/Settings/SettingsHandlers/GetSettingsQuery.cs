@@ -29,6 +29,8 @@ public class GetSettingsQueryHandler(ISettingsRepository settingsRepository)
         return new SettingsResponse(
             price_per_lunch: priceValue,
             default_cutoff_time: settings.GetValueOrDefault(SettingKeys.DefaultCutoffTime, SettingKeys.DefaultCutoffTimeValue),
-            time_zone: settings.GetValueOrDefault(SettingKeys.TimeZone, SettingKeys.DefaultTimeZone));
+            time_zone: settings.GetValueOrDefault(SettingKeys.TimeZone, SettingKeys.DefaultTimeZone),
+            bkash_number: settings.GetValueOrDefault(SettingKeys.BkashNumber, SettingKeys.DefaultBkashNumber),
+            bank_account: settings.GetValueOrDefault(SettingKeys.BankAccount, SettingKeys.DefaultBankAccount));
     }
 }

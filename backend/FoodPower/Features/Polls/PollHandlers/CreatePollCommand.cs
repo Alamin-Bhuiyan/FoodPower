@@ -96,19 +96,25 @@ public class CreatePollCommandHandler(
             }
         }
 
-        // Cutoff: local wall time in the configured timezone, stored as UTC.
+        // Cutoff: local wall time in the configured timezone (Asia/Dhaka by default),
+        // stored as UTC. All comparisons elsewhere are done in UTC.
         var timeZone = await settingsRepository.GetTimeZoneAsync(cancellationToken);
-        DateTime cutoffLocal;
+        DateTime cutoffUtc;
 
         if (!string.IsNullOrWhiteSpace(command.CutoffAt))
         {
             if (TimeSpan.TryParse(command.CutoffAt, CultureInfo.InvariantCulture, out var cutoffTime))
             {
-                cutoffLocal = lunchDate.Add(cutoffTime);
+                cutoffUtc = TimeZoneHelper.ToUtc(lunchDate.Add(cutoffTime), timeZone);
             }
-            else if (DateTime.TryParse(command.CutoffAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out var cutoffDateTime))
+            else if (DateTime.TryParse(command.CutoffAt, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var cutoffDateTime))
             {
-                cutoffLocal = cutoffDateTime;
+                // The frontend sends a naive ISO datetime (yyyy-MM-ddTHH:mm:ss) meaning
+                // wall time in the configured timezone. A value with an explicit Z or
+                // offset is already an absolute instant and only needs UTC normalisation.
+                cutoffUtc = cutoffDateTime.Kind == DateTimeKind.Unspecified
+                    ? TimeZoneHelper.ToUtc(cutoffDateTime, timeZone)
+                    : cutoffDateTime.ToUniversalTime();
             }
             else
             {
@@ -120,10 +126,8 @@ public class CreatePollCommandHandler(
         else
         {
             var defaultCutoff = await settingsRepository.GetDefaultCutoffTimeAsync(cancellationToken);
-            cutoffLocal = lunchDate.Add(defaultCutoff);
+            cutoffUtc = TimeZoneHelper.ToUtc(lunchDate.Add(defaultCutoff), timeZone);
         }
-
-        var cutoffUtc = TimeZoneHelper.ToUtc(cutoffLocal, timeZone);
 
         // Resolve options.
         var menuItemIds = command.Options
