@@ -1,0 +1,26 @@
+# Secrets — never commit
+.env
+*.env
+!env.example
+!.env.example
+
+# .NET
+bin/
+obj/
+*.user
+.idea/
+.vs/
+
+# Node / frontend
+node_modules/
+dist/
+*.local
+
+# Runtime data
+backend/FoodPower/resources/screenshots/
+logs/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

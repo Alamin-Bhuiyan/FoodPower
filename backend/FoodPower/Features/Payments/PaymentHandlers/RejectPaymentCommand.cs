@@ -1,0 +1,83 @@
+using System;
+using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
+using ErrorOr;
+using FluentValidation;
+using FoodPower.Application.Interfaces.Repositories;
+using FoodPower.Application.Interfaces.Services;
+using FoodPower.Contracts.Responses.Payments;
+using FoodPower.Domain.Enums;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+
+namespace FoodPower.Features.Payments.PaymentHandlers;
+
+public record RejectPaymentCommand(
+    int PaymentId,
+    string? Reason,
+    int AdminUserId
+) : IRequest<ErrorOr<PaymentResponse>>;
+
+public class RejectPaymentCommandValidator : AbstractValidator<RejectPaymentCommand>
+{
+    public RejectPaymentCommandValidator()
+    {
+        RuleFor(x => x.PaymentId)
+            .GreaterThan(0)
+            .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+            .WithMessage("payment id is invalid.");
+
+        RuleFor(x => x.Reason)
+            .MaximumLength(500)
+            .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+            .WithMessage("reason can be max of 500 characters.");
+    }
+}
+
+public class RejectPaymentCommandHandler(
+    IPaymentRepository paymentRepository,
+    INotificationService notificationService)
+    : IRequestHandler<RejectPaymentCommand, ErrorOr<PaymentResponse>>
+{
+    public async Task<ErrorOr<PaymentResponse>> Handle(
+        RejectPaymentCommand command, CancellationToken cancellationToken)
+    {
+        var payment = await paymentRepository.GetByIdWithDetailsAsync(command.PaymentId, cancellationToken);
+        if (payment == null)
+        {
+            return Error.NotFound(
+                code: StatusCodes.Status404NotFound.ToString(),
+                description: "payment not found.");
+        }
+
+        if (payment.Status != PaymentStatus.Pending)
+        {
+            return Error.Conflict(
+                code: StatusCodes.Status409Conflict.ToString(),
+                description: $"payment is already {payment.Status.ToString().ToLowerInvariant()}.");
+        }
+
+        payment.Status = PaymentStatus.Rejected;
+        payment.ReviewedById = command.AdminUserId;
+        payment.ReviewedAt = DateTime.UtcNow;
+
+        await paymentRepository.UpdateAsync(payment, cancellationToken);
+
+        var body = $"Your payment of {payment.TotalAmount.ToString("0.##", CultureInfo.InvariantCulture)} BDT was rejected.";
+        if (!string.IsNullOrWhiteSpace(command.Reason))
+        {
+            body += $" Reason: {command.Reason.Trim()}";
+        }
+
+        await notificationService.CreateForUserAsync(
+            userId: payment.SubmittedById,
+            title: "Payment rejected",
+            body: body,
+            type: NotificationType.PaymentRejected,
+            refId: payment.Id,
+            cancellationToken: cancellationToken);
+
+        return PaymentResponseFactory.From(payment);
+    }
+}
