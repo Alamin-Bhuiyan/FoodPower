@@ -4,12 +4,12 @@ Office lunch management: the admin publishes the catering menu and a nightly lun
 
 ## Structure
 
-- `backend/` — ASP.NET Core (.NET 9), EF Core + SQL Server, ASP.NET Core Identity, JWT auth, OTP email via Gmail SMTP. Vertical-slice architecture following the AMS project patterns. Dockerized for Render.
+- `backend/` — ASP.NET Core (.NET 10), EF Core + SQL Server, ASP.NET Core Identity, JWT auth, OTP email via Gmail SMTP. Vertical-slice architecture following the AMS project patterns. Dockerized for Render.
 - `frontend/` — Vite + React 18 + TypeScript + Tailwind + shadcn/ui + TanStack Query. Mobile-app-style UI (bottom tab bar), English/Bangla localization (browser-detected, EN/বাং toggle).
 
 ## Backend — run locally
 
-Requires .NET 9 SDK and SQL Server.
+Requires .NET 10 SDK and SQL Server.
 
 ```bash
 cd backend/FoodPower
@@ -29,7 +29,39 @@ dotnet ef migrations add InitialCreate
 
 Use your personal Gmail account: `EMAIL_SMTP_HOST=smtp.gmail.com`, port 587, `EMAIL_USE_SSL=true`, `EMAIL_SENDER_ADDRESS=<your gmail address>`, `EMAIL_SENDER_PASSWORD=<app password>`. Gmail requires an app password (Google Account → Security → 2-Step Verification → App passwords) — your normal account password will not work.
 
-### Docker / Render
+### Docker Compose (local — API + SQL Server)
+
+The quickest way to run the backend locally is `docker compose`, which starts SQL Server and the API together. The API waits for a database healthcheck before booting (its startup initializer swallows DB-connection errors, so it must not start before SQL Server is ready).
+
+```bash
+cd backend
+cp .env.example .env        # then edit .env — set MSSQL_SA_PASSWORD and JWT_SECRET at minimum
+docker compose up --build
+```
+
+- API + Swagger: `http://localhost:8080`
+- SQL Server: `localhost:1433` (user `sa`)
+
+On first start the app auto-creates the schema (`EnsureCreated`) and seeds roles, the admin user, default settings and a sample caterer. The first run is slow: the .NET SDK image compiles the project and SQL Server takes ~30–40 s to become healthy before the API starts. Point the frontend's `VITE_API_BASE_URL` at `http://localhost:8080`.
+
+Common commands:
+
+```bash
+docker compose up -d --build   # run in background
+docker compose logs -f api     # follow API logs
+docker compose down            # stop (keeps DB + screenshots)
+docker compose down -v         # stop and wipe the DB and uploaded screenshots
+```
+
+Notes:
+
+- `MSSQL_SA_PASSWORD` must be strong (8+ chars incl. upper, lower, digit and symbol) or the SQL Server container refuses to start and the healthcheck never passes.
+- Email/OTP stays disabled until `EMAIL_SENDER_ADDRESS`/`EMAIL_SENDER_PASSWORD` are set (Gmail app password); everything else runs without it.
+- Data persists in the `mssql-data` and `screenshots` named volumes across rebuilds.
+
+### Docker (single image) / Render
+
+To build and run just the API image against an external SQL Server:
 
 ```bash
 cd backend

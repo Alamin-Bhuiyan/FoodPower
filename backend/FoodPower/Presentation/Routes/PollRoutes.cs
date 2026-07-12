@@ -26,6 +26,10 @@ public class PollRoutes
     public const string CastVoteName = "foodpower.polls.cast_vote";
     public const string CastVoteTemplate = "/api/polls/{id}/votes";
 
+    public const string RemoveVoteMethod = "DELETE";
+    public const string RemoveVoteName = "foodpower.polls.remove_vote";
+    public const string RemoveVoteTemplate = "/api/polls/{id}/votes";
+
     public const string ManualVoteMethod = "POST";
     public const string ManualVoteName = "foodpower.polls.manual_vote";
     public const string ManualVoteTemplate = "/api/polls/{id}/manual-votes";

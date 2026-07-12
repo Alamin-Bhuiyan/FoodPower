@@ -124,4 +124,16 @@ const SharedPoll = () => {
                                 <Button asChild variant="secondary" className="h-12 rounded-xl font-semibold">
                                     <Link to="/register">{t('sharedPoll.register')}</Link>
                                 </Button>
-                                <Button asChild className="h-12 ro
+                                <Button asChild className="h-12 rounded-xl font-semibold shadow-[0_4px_14px_rgba(249,115,22,0.35)]">
+                                    <Link to="/login">{t('sharedPoll.signIn')}</Link>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default SharedPoll;

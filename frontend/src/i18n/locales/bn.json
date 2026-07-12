@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "লাঞ্চহাব",
+    "name": "FoodPower",
     "tagline": "অফিসের লাঞ্চ, ঝামেলা ছাড়াই।",
     "pollTagline": "অফিস লাঞ্চ পোল"
   },
@@ -12,7 +12,7 @@
     "profile": "প্রোফাইল"
   },
   "titles": {
-    "home": "লাঞ্চহাব",
+    "home": "FoodPower",
     "menu": "সাপ্তাহিক মেনু",
     "payments": "পেমেন্ট",
     "dues": "বাকি ও ব্যালেন্স",
@@ -82,6 +82,9 @@
     "closePollSuffix": "· পোল বন্ধ",
     "yourVote": "আপনার ভোট:",
     "tapToChange": " — পরিবর্তন করতে অন্য অপশনে চাপ দিন।",
+    "removeVote": "আমার ভোট সরিয়ে ফেলুন",
+    "voteRemoved": "আপনার ভোট সরিয়ে ফেলা হয়েছে।",
+    "removeVoteFailed": "ভোট সরানো যায়নি",
     "shareText": "🍱 {{date}} তারিখের লাঞ্চ পোল — এখানে ভোট দিন: {{url}}",
     "voteRecorded": "আপনার ভোট রেকর্ড করা হয়েছে!",
     "voteFailed": "ভোট রেকর্ড করা যায়নি"
@@ -217,13 +220,13 @@
   "sharedPoll": {
     "notFoundTitle": "পোল পাওয়া যায়নি",
     "notFoundBody": "পোলটি মুছে ফেলা হয়ে থাকতে পারে অথবা লিংকটি সঠিক নয়।",
-    "goToApp": "লাঞ্চহাবে যান",
+    "goToApp": "FoodPower-এ যান",
     "votesSoFar_one": "এখন পর্যন্ত {{count}}টি ভোট",
     "votesSoFar_other": "এখন পর্যন্ত {{count}}টি ভোট",
     "wantLunch": "আপনিও লাঞ্চ চান?",
     "openToVote": "শেষ সময়ের আগে ভোট দিতে অ্যাপ খুলুন।",
     "signInToVote": "শেষ সময়ের আগে ভোট দিতে সাইন ইন করুন বা অ্যাকাউন্ট খুলুন।",
-    "openAndVote": "লাঞ্চহাব খুলে ভোট দিন",
+    "openAndVote": "FoodPower খুলে ভোট দিন",
     "register": "নিবন্ধন",
     "signIn": "সাইন ইন"
   },

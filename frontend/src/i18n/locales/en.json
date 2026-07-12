@@ -82,6 +82,9 @@
     "closePollSuffix": "· close poll",
     "yourVote": "Your vote:",
     "tapToChange": " — tap another option to change it.",
+    "removeVote": "Remove my vote",
+    "voteRemoved": "Your vote has been removed.",
+    "removeVoteFailed": "Failed to remove vote",
     "shareText": "🍱 Lunch poll for {{date}} — vote here: {{url}}",
     "voteRecorded": "Your vote has been recorded!",
     "voteFailed": "Failed to record vote"

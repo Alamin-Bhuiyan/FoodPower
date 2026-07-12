@@ -44,6 +44,11 @@ export const vote = async (pollId: number, pollOptionId: number): Promise<ApiRes
     return response.data;
 };
 
+export const removeVote = async (pollId: number): Promise<ApiResponse> => {
+    const response = await axiosClient.delete(`/api/polls/${pollId}/votes`);
+    return response.data;
+};
+
 export const addManualVote = async (pollId: number, data: { user_id: number; poll_option_id: number }): Promise<ApiResponse> => {
     const response = await axiosClient.post(`/api/polls/${pollId}/manual-votes`, data);
     return response.data;

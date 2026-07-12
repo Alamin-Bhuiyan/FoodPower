@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { CalendarPlus, Share2, Users, Vote, Info } from 'lucide-react';
+import { CalendarPlus, Share2, Users, Vote, Info, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import PollOptionCard from '@/components/poll/PollOptionCard';
@@ -45,6 +45,16 @@ const Home = () => {
             queryClient.invalidateQueries({ queryKey: ['my-dues'] });
         },
         onError: (error: any) => toast.error(getErrorMessage(error, t('home.voteFailed')), { duration: 6000 }),
+    });
+
+    const removeVoteMutation = useMutation({
+        mutationFn: () => pollsService.removeVote(poll!.id),
+        onSuccess: () => {
+            toast.success(t('home.voteRemoved'));
+            queryClient.invalidateQueries({ queryKey: ['active-poll'] });
+            queryClient.invalidateQueries({ queryKey: ['my-dues'] });
+        },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('home.removeVoteFailed')), { duration: 6000 }),
     });
 
     const isOpen = poll ? pollStatusLabel(poll.status) === POLL_STATUS.OPEN : false;
@@ -121,7 +131,7 @@ const Home = () => {
                         option={option}
                         totalVotes={totalVotes}
                         selected={poll.my_vote_option_id === option.id}
-                        disabled={!canVote || voteMutation.isPending}
+                        disabled={!canVote || voteMutation.isPending || removeVoteMutation.isPending}
                         onSelect={() => {
                             if (!canVote) return;
                             if (poll.my_vote_option_id === option.id) return;
@@ -155,12 +165,24 @@ const Home = () => {
             </div>
 
             {user && poll.my_vote_option_id != null && (
-                <p className="text-center text-xs text-muted-foreground">
-                    {t('home.yourVote')} <span className="font-semibold text-foreground">
-                        {poll.options.find(o => o.id === poll.my_vote_option_id)?.name}
-                    </span>
-                    {canVote && t('home.tapToChange')}
-                </p>
+                <div className="space-y-2 pt-1">
+                    <p className="text-center text-xs text-muted-foreground">
+                        {t('home.yourVote')} <span className="font-semibold text-foreground">
+                            {poll.options.find(o => o.id === poll.my_vote_option_id)?.name}
+                        </span>
+                        {canVote && t('home.tapToChange')}
+                    </p>
+                    {canVote && (
+                        <Button
+                            variant="ghost"
+                            className="w-full h-10 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 text-sm font-medium"
+                            onClick={() => removeVoteMutation.mutate()}
+                            disabled={removeVoteMutation.isPending || voteMutation.isPending}
+                        >
+                            <Trash2 className="h-4 w-4" /> {t('home.removeVote')}
+                        </Button>
+                    )}
+                </div>
             )}
 
             {admin && (

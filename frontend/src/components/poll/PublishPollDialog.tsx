@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,8 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
     const [selectedMenuIds, setSelectedMenuIds] = useState<number[]>([]);
     const [customOptions, setCustomOptions] = useState<string[]>([]);
     const [customInput, setCustomInput] = useState('');
-    const [customCutoff, setCustomCutoff] = useState('');
+    const [customCutoff, setCustomCutoff] = useState('10:00');
+    const [cutoffTouched, setCutoffTouched] = useState(false);
 
     const dayOfWeek = useMemo(() => new Date(lunchDate + 'T00:00:00').getDay(), [lunchDate]);
 
@@ -52,6 +53,12 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
     });
     const defaultCutoff = settingsRes?.data?.default_cutoff_time ?? '10:00';
 
+    // Pre-select the cutoff time (10:00 by default, or the admin-configured
+    // default once settings load) unless the user has changed it.
+    useEffect(() => {
+        if (!cutoffTouched) setCustomCutoff(defaultCutoff);
+    }, [defaultCutoff, cutoffTouched]);
+
     const { data: menuRes, isLoading: menuLoading } = useQuery({
         queryKey: ['menu-items', catererId, dayOfWeek],
         queryFn: () => menuService.getMenuItems({ catererId: Number(catererId), day: dayOfWeek }),
@@ -67,7 +74,8 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
             onOpenChange(false);
             setSelectedMenuIds([]);
             setCustomOptions([]);
-            setCustomCutoff('');
+            setCustomCutoff(defaultCutoff);
+            setCutoffTouched(false);
         },
         onError: (error: any) => toast.error(getErrorMessage(error, t('publishPoll.publishFailed')), { duration: 6000 }),
     });
@@ -193,7 +201,7 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
 
                     <div className="space-y-1.5">
                         <Label>{t('publishPoll.customCutoff')} <span className="text-muted-foreground font-normal">{t('publishPoll.customCutoffHint', { time: defaultCutoff })}</span></Label>
-                        <Input type="time" value={customCutoff} onChange={e => setCustomCutoff(e.target.value)} className="h-11 rounded-xl" />
+                        <Input type="time" value={customCutoff} onChange={e => { setCustomCutoff(e.target.value); setCutoffTouched(true); }} className="h-11 rounded-xl" />
                     </div>
 
                     <Button

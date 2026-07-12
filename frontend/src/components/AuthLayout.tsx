@@ -27,4 +27,13 @@ const AuthLayout = ({ title, subtitle, children }: AuthLayoutProps) => {
                 <LanguageToggle className="mt-1" />
             </div>
 
-            <div cla
+            <div className="flex-1">
+                <h1 className="text-2xl font-extrabold text-foreground">{title}</h1>
+                {subtitle && <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>}
+                <div className="mt-8">{children}</div>
+            </div>
+        </div>
+    );
+};
+
+export default AuthLayout;

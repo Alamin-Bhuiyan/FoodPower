@@ -1,0 +1,57 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      # Gate the API on a real query. mssql-tools18 ships in the 2022 image;
+      # -C trusts the self-signed dev cert. $$ escapes compose substitution so
+      # the variable is read inside the container.
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "8080"
+      # Server name "db" is the compose service; the app auto-creates the schema
+      # (EnsureCreated) and seeds roles/admin/settings on first start.
+      DB_CONNECTION_STRING: "Server=db,1433;Database=FoodPower;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;"
+      JWT_SECRET: "${JWT_SECRET}"
+      JWT_ISSUER: "${JWT_ISSUER:-FoodPower}"
+      JWT_AUDIENCE: "${JWT_AUDIENCE:-FoodPower}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      EMAIL_SMTP_HOST: "${EMAIL_SMTP_HOST:-smtp.gmail.com}"
+      EMAIL_SMTP_PORT: "${EMAIL_SMTP_PORT:-587}"
+      EMAIL_SENDER_NAME: "${EMAIL_SENDER_NAME:-FoodPower}"
+      EMAIL_SENDER_ADDRESS: "${EMAIL_SENDER_ADDRESS}"
+      EMAIL_SENDER_PASSWORD: "${EMAIL_SENDER_PASSWORD}"
+      EMAIL_USE_SSL: "${EMAIL_USE_SSL:-true}"
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist uploaded payment screenshots across container rebuilds.
+      - screenshots:/app/resources/screenshots
+
+volumes:
+  mssql-data:
+  screenshots:
