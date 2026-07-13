@@ -87,7 +87,11 @@
     "removeVoteFailed": "ভোট সরানো যায়নি",
     "shareText": "🍱 {{date}} তারিখের লাঞ্চ পোল — এখানে ভোট দিন: {{url}}",
     "voteRecorded": "আপনার ভোট রেকর্ড করা হয়েছে!",
-    "voteFailed": "ভোট রেকর্ড করা যায়নি"
+    "voteFailed": "ভোট রেকর্ড করা যায়নি",
+    "otherPolls": "অন্যান্য পোল",
+    "generalPoll": "পোল",
+    "noPaymentEffect": "পেমেন্টে প্রভাব নেই",
+    "shareGeneralText": "🗳️ পোল: {{question}} — এখানে ভোট দিন: {{url}}"
   },
   "menu": {
     "addItem": "যোগ করুন",
@@ -238,7 +242,8 @@
     "signInToVote": "শেষ সময়ের আগে ভোট দিতে সাইন ইন করুন বা অ্যাকাউন্ট খুলুন।",
     "openAndVote": "FoodPower খুলে ভোট দিন",
     "register": "নিবন্ধন",
-    "signIn": "সাইন ইন"
+    "signIn": "সাইন ইন",
+    "wantVote": "আপনিও ভোট দিতে চান?"
   },
   "publishPoll": {
     "title": "লাঞ্চ পোল প্রকাশ করুন",
@@ -259,7 +264,15 @@
     "publishFailed": "পোল প্রকাশ করা যায়নি",
     "optionExists": "এই অপশনটি আগেই যোগ করা হয়েছে",
     "pickDate": "লাঞ্চের তারিখ নির্বাচন করুন",
-    "addOneOption": "কমপক্ষে একটি অপশন যোগ করুন"
+    "addOneOption": "কমপক্ষে একটি অপশন যোগ করুন",
+    "titleGeneral": "পোল প্রকাশ করুন",
+    "pollType": "পোলের ধরন",
+    "typeLunch": "লাঞ্চ",
+    "typeOther": "অন্যান্য",
+    "pollDate": "পোলের তারিখ",
+    "question": "প্রশ্ন",
+    "questionPlaceholder": "যেমন: টিম আউটিংয়ে আমরা কোথায় যাব?",
+    "questionRequired": "পোলের জন্য একটি প্রশ্ন লিখুন"
   },
   "manageVotes": {
     "title": "ভোট ব্যবস্থাপনা",
@@ -268,6 +281,7 @@
     "manual": "ম্যানুয়াল",
     "addVoteForUser": "ব্যবহারকারীর জন্য ভোট যোগ করুন",
     "addVoteHint": "শেষ সময়ের পরের অনুরোধের জন্য — লাঞ্চটি ব্যবহারকারীর বাকিতে যোগ হবে।",
+    "addVoteHintGeneral": "ব্যবহারকারীর পক্ষে ভোট যোগ করুন। সাধারণ পোল বাকিতে কোনো প্রভাব ফেলে না।",
     "selectUser": "ব্যবহারকারী নির্বাচন করুন",
     "selectOption": "অপশন নির্বাচন করুন",
     "adding": "যোগ হচ্ছে…",

@@ -87,7 +87,11 @@
     "removeVoteFailed": "Failed to remove vote",
     "shareText": "🍱 Lunch poll for {{date}} — vote here: {{url}}",
     "voteRecorded": "Your vote has been recorded!",
-    "voteFailed": "Failed to record vote"
+    "voteFailed": "Failed to record vote",
+    "otherPolls": "Other polls",
+    "generalPoll": "Poll",
+    "noPaymentEffect": "No payment effect",
+    "shareGeneralText": "🗳️ Poll: {{question}} — vote here: {{url}}"
   },
   "menu": {
     "addItem": "Add",
@@ -238,7 +242,8 @@
     "signInToVote": "Sign in or create an account to cast your vote before the cutoff.",
     "openAndVote": "Open FoodPower & vote",
     "register": "Register",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "wantVote": "Want to vote too?"
   },
   "publishPoll": {
     "title": "Publish lunch poll",
@@ -259,7 +264,15 @@
     "publishFailed": "Failed to publish poll",
     "optionExists": "Option already added",
     "pickDate": "Pick a lunch date",
-    "addOneOption": "Add at least one option"
+    "addOneOption": "Add at least one option",
+    "titleGeneral": "Publish poll",
+    "pollType": "Poll type",
+    "typeLunch": "Lunch",
+    "typeOther": "Other",
+    "pollDate": "Poll date",
+    "question": "Question",
+    "questionPlaceholder": "e.g. Where should we go for the team outing?",
+    "questionRequired": "Enter a question for the poll"
   },
   "manageVotes": {
     "title": "Manage votes",
@@ -268,6 +281,7 @@
     "manual": "manual",
     "addVoteForUser": "Add vote for user",
     "addVoteHint": "For late requests after the cutoff — the lunch is added to the user's due.",
+    "addVoteHintGeneral": "Add a vote on behalf of a user. General polls never affect dues.",
     "selectUser": "Select user",
     "selectOption": "Select option",
     "adding": "Adding…",

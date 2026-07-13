@@ -21,6 +21,39 @@ public static class EmailTemplates
          </div>
          """;
 
+    public static string GeneralPollPublishedSubject(string question) =>
+        $"নতুন পোল — New poll: {question}";
+
+    public static string GeneralPollPublishedBody(
+        string question,
+        IReadOnlyCollection<string> optionNames,
+        string cutoffLocal,
+        string pollUrl)
+    {
+        var optionsHtml = string.Join(
+            string.Empty,
+            optionNames.Select(name =>
+                $"""<li style="margin: 4px 0; color: #111827;">{name}</li>"""));
+
+        return
+            $"""
+             <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+                 <h2 style="color: #16a34a;">FoodPower</h2>
+                 <p>নতুন একটি পোল প্রকাশিত হয়েছে। এখনই ভোট দিন!</p>
+                 <p>A new poll is live: <strong>{question}</strong>. Cast your vote now!</p>
+                 <ul style="padding-left: 20px;">{optionsHtml}</ul>
+                 <p><strong>{cutoffLocal}</strong> এর আগে ভোট দিন — Vote before <strong>{cutoffLocal}</strong>.</p>
+                 <p style="margin: 24px 0;">
+                     <a href="{pollUrl}"
+                        style="background-color: #16a34a; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                         ভোট দিন / Vote now
+                     </a>
+                 </p>
+                 <p style="color: #6b7280; font-size: 12px;">FoodPower - office lunch management</p>
+             </div>
+             """;
+    }
+
     public static string PollPublishedSubject(string lunchDate) =>
         $"আজকের লাঞ্চ পোল — Vote for lunch ({lunchDate})";
 

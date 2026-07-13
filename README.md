@@ -108,6 +108,7 @@ npm run dev
 - One payment can cover multiple people: pick beneficiaries and days per person; the server computes the amount. Admin approves/rejects with the screenshot as evidence.
 - Poll publish notifies all active users in-app and produces a public share link (`/poll/<token>`) for WhatsApp. The admin can additionally email everyone on demand ("Send email to everyone" in Manage votes): vote link + cutoff in Dhaka time + weekly payment reminder with bKash/bank details from Settings.
 - Votes can be removed ("unvote") until the cutoff; after that, only the admin can change anything.
+- Polls have a type: Lunch (default — every vote adds to the voter's due) or General ("Other" in the publish dialog — any question with custom options; votes never affect dues/payments). Several general polls can be open at once alongside the day's lunch poll; they appear under "Other polls" on Home.
 - All times are Bangladesh time (Asia/Dhaka) — cutoff interpretation on the server and every date/time shown in the UI, regardless of the viewer's browser timezone.
 - Cutoff time (default 10:00), price per lunch and timezone are admin-configurable in Settings; per-poll cutoff can be overridden at publish time.
 - Bangla text is safe end-to-end (nvarchar columns, UTF-8 email); UI language auto-detects the browser and can be toggled EN/বাং.

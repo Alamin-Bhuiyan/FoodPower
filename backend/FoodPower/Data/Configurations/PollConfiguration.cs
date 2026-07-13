@@ -1,4 +1,5 @@
 using FoodPower.Domain.Entities;
+using FoodPower.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,6 +18,10 @@ public class PollConfiguration : IEntityTypeConfiguration<Poll>
         builder.Property(x => x.CatererId).HasColumnName("caterer_id");
         builder.Property(x => x.PricePerLunch).HasColumnName("price_per_lunch").HasPrecision(18, 2);
         builder.Property(x => x.CutoffAt).HasColumnName("cutoff_at");
+        builder.Property(x => x.Type)
+            .HasColumnName("poll_type")
+            .HasConversion<int>()
+            .HasDefaultValue(PollType.Lunch);
         builder.Property(x => x.Status).HasColumnName("status");
         builder.Property(x => x.ShareToken).HasColumnName("share_token");
         builder.Property(x => x.Question).HasColumnName("question").HasMaxLength(300).IsRequired();

@@ -14,5 +14,6 @@ public class CreatePollRequest
     public int? caterer_id { get; set; }
     public string? question { get; set; }
     public string? cutoff_at { get; set; }
+    public string? poll_type { get; set; }
     public List<CreatePollOptionRequest> options { get; set; } = [];
 }

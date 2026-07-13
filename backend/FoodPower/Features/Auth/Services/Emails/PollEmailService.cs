@@ -10,6 +10,7 @@ using FoodPower.BuildingBlocks.Constants;
 using FoodPower.BuildingBlocks.Utilities;
 using FoodPower.Data;
 using FoodPower.Domain.Entities;
+using FoodPower.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,9 +52,24 @@ public class PollEmailService(
         var optionNames = poll.Options.OrderBy(o => o.SortOrder).Select(o => o.Name).ToList();
         var pollUrl = $"{frontendBaseUrl}/poll/{poll.ShareToken}";
 
-        var subject = EmailTemplates.PollPublishedSubject(lunchDateText);
-        var body = EmailTemplates.PollPublishedBody(
-            lunchDateText, optionNames, cutoffLocalText, pollUrl, bkashNumber, bankAccount);
+        // General polls never affect dues, so the weekly-payment reminder is only
+        // relevant for Lunch polls.
+        string subject;
+        string body;
+
+        if (poll.Type == PollType.General)
+        {
+            subject = EmailTemplates.GeneralPollPublishedSubject(poll.Question);
+            body = EmailTemplates.GeneralPollPublishedBody(
+                poll.Question, optionNames, cutoffLocalText, pollUrl);
+        }
+        else
+        {
+            subject = EmailTemplates.PollPublishedSubject(lunchDateText);
+            body = EmailTemplates.PollPublishedBody(
+                lunchDateText, optionNames, cutoffLocalText, pollUrl, bkashNumber, bankAccount);
+        }
+
         var pollId = poll.Id;
 
         // Fire-and-forget: sending emails must never fail or slow down the request,

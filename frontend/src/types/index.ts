@@ -68,6 +68,8 @@ export interface PollOption {
 
 export interface Poll {
     id: number;
+    /** "Lunch" | "General" (case-insensitive). Missing/undefined means Lunch. */
+    poll_type?: string;
     lunch_date: string;       // ISO date
     caterer_id?: number | null;
     caterer_name?: string | null;

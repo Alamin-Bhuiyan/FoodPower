@@ -15,6 +15,7 @@ public class PollMapping : IRegister
                 src.caterer_id,
                 src.question,
                 src.cutoff_at,
+                src.poll_type,
                 src.options.Select(o => new PollOptionInput(o.menu_item_id, o.custom_name)).ToList(),
                 0
             ));

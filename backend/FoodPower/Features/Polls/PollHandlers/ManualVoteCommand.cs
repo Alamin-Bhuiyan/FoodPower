@@ -91,10 +91,15 @@ public class ManualVoteCommandHandler(
             await voteRepository.AddAsync(vote, cancellationToken);
         }
 
+        // A manual vote on a General poll never creates a due; adjust the wording accordingly.
+        var isGeneral = poll.Type == PollType.General;
+
         await notificationService.CreateForUserAsync(
             userId: command.UserId,
-            title: "Lunch added by admin",
-            body: $"An admin recorded a lunch for you on {poll.LunchDate:dd MMM yyyy} ({option.Name}).",
+            title: isGeneral ? "Vote added by admin" : "Lunch added by admin",
+            body: isGeneral
+                ? $"An admin recorded a vote for you on \"{poll.Question}\" ({option.Name})."
+                : $"An admin recorded a lunch for you on {poll.LunchDate:dd MMM yyyy} ({option.Name}).",
             type: NotificationType.ManualVoteAdded,
             refId: poll.Id,
             cancellationToken: cancellationToken);

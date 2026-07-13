@@ -20,6 +20,7 @@ import UserAvatar from '@/components/common/UserAvatar';
 import * as usersService from '@/services/users.service';
 import * as pollsService from '@/services/polls.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
+import { isGeneralPoll } from '@/lib/format';
 import type { Poll } from '@/types';
 
 interface ManageVotesSheetProps {
@@ -49,8 +50,11 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
     );
     const nonVoters = users.filter(u => !votedUserIds.has(u.id));
 
+    const general = isGeneralPoll(poll);
+
+    // General polls never touch dues, so only their own list is refreshed.
     const invalidate = () => {
-        queryClient.invalidateQueries({ queryKey: ['active-poll'] });
+        queryClient.invalidateQueries({ queryKey: general ? ['general-active-polls'] : ['active-poll'] });
         queryClient.invalidateQueries({ queryKey: ['poll-results', poll.id] });
     };
 
@@ -132,7 +136,7 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                                 <h3 className="text-sm font-semibold">{t('manageVotes.addVoteForUser')}</h3>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                {t('manageVotes.addVoteHint')}
+                                {general ? t('manageVotes.addVoteHintGeneral') : t('manageVotes.addVoteHint')}
                             </p>
                             <Select value={manualUserId} onValueChange={setManualUserId}>
                                 <SelectTrigger className="h-11 rounded-xl">

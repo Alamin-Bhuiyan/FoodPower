@@ -1,5 +1,6 @@
 import { PAYMENT_STATUS, POLL_STATUS } from './constants';
 import { dateLocale } from '@/i18n';
+import type { Poll } from '@/types';
 
 /** All dates/times are displayed in Bangladesh time, regardless of the viewer's browser timezone. */
 const TIME_ZONE = 'Asia/Dhaka';
@@ -61,6 +62,10 @@ export const pollStatusLabel = (status: string | number | undefined | null): str
         default: return String(status ?? '');
     }
 };
+
+/** True when the poll is a General (non-lunch) poll. Missing poll_type means Lunch. */
+export const isGeneralPoll = (poll: Poll): boolean =>
+    (poll.poll_type ?? 'Lunch').toLowerCase() === 'general';
 
 /** Day of week (0 = Sunday … 6 = Saturday) for "now" in Bangladesh time. */
 export const dhakaDayOfWeek = (): number => {

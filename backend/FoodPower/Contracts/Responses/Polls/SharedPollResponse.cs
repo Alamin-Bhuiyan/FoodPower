@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using FoodPower.Domain.Enums;
 
 namespace FoodPower.Contracts.Responses.Polls;
 
@@ -17,6 +18,7 @@ public record SharedPollResponse(
     string? caterer_name,
     decimal price_per_lunch,
     DateTime cutoff_at,
+    PollType poll_type,
     string status,
     string share_token,
     bool is_cutoff_passed,

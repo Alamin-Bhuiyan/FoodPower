@@ -9,7 +9,7 @@ import UserAvatar from '@/components/common/UserAvatar';
 import LanguageToggle from '@/components/common/LanguageToggle';
 import * as pollsService from '@/services/polls.service';
 import { isAuthenticated } from '@/lib/auth';
-import { formatBDT, formatDate } from '@/lib/format';
+import { formatBDT, formatDate, isGeneralPoll } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 /** Public shared poll page — results + login CTA (linked from WhatsApp). */
@@ -25,6 +25,7 @@ const SharedPoll = () => {
         refetchInterval: 30000,
     });
     const poll = pollRes?.data;
+    const general = !!poll && isGeneralPoll(poll);
     const totalVotes = poll
         ? (poll.total_votes ?? poll.options.reduce((sum, o) => sum + (o.vote_count ?? o.voters?.length ?? 0), 0))
         : 0;
@@ -63,14 +64,27 @@ const SharedPoll = () => {
                     {/* Poll header */}
                     <div className="card p-4">
                         <div className="flex items-start justify-between gap-2">
-                            <div>
-                                <p className="text-xs font-semibold text-primary uppercase tracking-wide">{t('home.lunchPoll')}</p>
-                                <h2 className="text-lg font-bold mt-0.5">{formatDate(poll.lunch_date)}</h2>
+                            <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                    <p className="text-xs font-semibold text-primary uppercase tracking-wide">
+                                        {general ? t('home.generalPoll') : t('home.lunchPoll')}
+                                    </p>
+                                    {general && (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold">
+                                            {t('home.noPaymentEffect')}
+                                        </span>
+                                    )}
+                                </div>
+                                <h2 className="text-lg font-bold mt-0.5 break-words">
+                                    {general ? (poll.question || formatDate(poll.lunch_date)) : formatDate(poll.lunch_date)}
+                                </h2>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    {poll.caterer_name ? `${poll.caterer_name} · ` : ''}{t('home.perLunch', { price: formatBDT(poll.price_per_lunch) })}
+                                    {general
+                                        ? formatDate(poll.lunch_date)
+                                        : `${poll.caterer_name ? `${poll.caterer_name} · ` : ''}${t('home.perLunch', { price: formatBDT(poll.price_per_lunch) })}`}
                                 </p>
                             </div>
-                            <CountdownChip cutoffAt={poll.cutoff_at} />
+                            <CountdownChip cutoffAt={poll.cutoff_at} className="shrink-0" />
                         </div>
                         <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                             <Users className="h-3.5 w-3.5" />
@@ -111,7 +125,7 @@ const SharedPoll = () => {
 
                     {/* CTA */}
                     <div className={cn('card p-4 text-center space-y-2')}>
-                        <p className="text-sm font-semibold">{t('sharedPoll.wantLunch')}</p>
+                        <p className="text-sm font-semibold">{general ? t('sharedPoll.wantVote') : t('sharedPoll.wantLunch')}</p>
                         <p className="text-xs text-muted-foreground">
                             {loggedIn ? t('sharedPoll.openToVote') : t('sharedPoll.signInToVote')}
                         </p>

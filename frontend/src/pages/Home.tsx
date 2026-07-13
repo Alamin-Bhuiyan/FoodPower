@@ -9,6 +9,7 @@ import PollOptionCard from '@/components/poll/PollOptionCard';
 import CountdownChip from '@/components/poll/CountdownChip';
 import PublishPollDialog from '@/components/poll/PublishPollDialog';
 import ManageVotesSheet from '@/components/poll/ManageVotesSheet';
+import GeneralPollCard from '@/components/poll/GeneralPollCard';
 import * as pollsService from '@/services/polls.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { isAdmin, getStoredUser } from '@/lib/auth';
@@ -36,6 +37,14 @@ const Home = () => {
         refetchInterval: 30000, // live vote counts
     });
     const poll = pollRes?.data ?? null;
+
+    // Open General polls (never affect dues) shown below the lunch poll.
+    const { data: generalRes } = useQuery({
+        queryKey: ['general-active-polls'],
+        queryFn: pollsService.getActiveGeneralPolls,
+        refetchInterval: 30000, // live vote counts
+    });
+    const generalPolls = generalRes?.data ?? [];
 
     const voteMutation = useMutation({
         mutationFn: (optionId: number) => pollsService.vote(poll!.id, optionId),
@@ -82,23 +91,36 @@ const Home = () => {
         );
     }
 
+    // "Other polls" section — only rendered when at least one General poll is open.
+    const generalSection = generalPolls.length > 0 ? (
+        <div className="space-y-3 pt-2">
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1">{t('home.otherPolls')}</h2>
+            {generalPolls.map(gp => (
+                <GeneralPollCard key={gp.id} poll={gp} admin={admin} />
+            ))}
+        </div>
+    ) : null;
+
     if (!poll) {
         return (
-            <div>
-                <div className="empty-state">
-                    <Vote />
-                    <h3>{t('home.noPollTitle')}</h3>
-                    <p>{t('home.noPollBody')}</p>
+            <div className="space-y-4">
+                <div>
+                    <div className="empty-state">
+                        <Vote />
+                        <h3>{t('home.noPollTitle')}</h3>
+                        <p>{t('home.noPollBody')}</p>
+                    </div>
+                    {admin && (
+                        <Button
+                            className="w-full h-12 rounded-xl font-semibold shadow-[0_4px_14px_rgba(249,115,22,0.35)]"
+                            onClick={() => setPublishOpen(true)}
+                        >
+                            <CalendarPlus className="h-4 w-4" /> {t('home.publishPoll')}
+                        </Button>
+                    )}
+                    <PublishPollDialog open={publishOpen} onOpenChange={setPublishOpen} />
                 </div>
-                {admin && (
-                    <Button
-                        className="w-full h-12 rounded-xl font-semibold shadow-[0_4px_14px_rgba(249,115,22,0.35)]"
-                        onClick={() => setPublishOpen(true)}
-                    >
-                        <CalendarPlus className="h-4 w-4" /> {t('home.publishPoll')}
-                    </Button>
-                )}
-                <PublishPollDialog open={publishOpen} onOpenChange={setPublishOpen} />
+                {generalSection}
             </div>
         );
     }
@@ -184,6 +206,8 @@ const Home = () => {
                     )}
                 </div>
             )}
+
+            {generalSection}
 
             {admin && (
                 <ManageVotesSheet open={manageOpen} onOpenChange={setManageOpen} poll={poll} isPollOpen={isOpen} />

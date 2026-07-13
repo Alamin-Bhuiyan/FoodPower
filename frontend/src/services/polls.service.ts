@@ -11,6 +11,9 @@ export interface CreatePollPayload {
     caterer_id?: number | null;
     options: CreatePollOption[];
     cutoff_at?: string | null;   // ISO datetime, optional custom cutoff
+    /** "Lunch" (default) | "General". General polls never affect dues. */
+    poll_type?: string;
+    /** Required when poll_type is "General". */
     question?: string;
 }
 
@@ -21,6 +24,12 @@ export const createPoll = async (data: CreatePollPayload): Promise<ApiResponse<P
 
 export const getActivePoll = async (): Promise<ApiResponse<Poll | null>> => {
     const response = await axiosClient.get('/api/polls/active');
+    return response.data;
+};
+
+/** All currently open General polls (never affect dues). */
+export const getActiveGeneralPolls = async (): Promise<ApiResponse<Poll[]>> => {
+    const response = await axiosClient.get('/api/polls/general-active');
     return response.data;
 };
 

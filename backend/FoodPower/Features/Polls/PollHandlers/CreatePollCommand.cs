@@ -24,6 +24,7 @@ public record CreatePollCommand(
     int? CatererId,
     string? Question,
     string? CutoffAt,
+    string? PollType,
     List<PollOptionInput> Options,
     int UserId
 ) : IRequest<ErrorOr<PollResponse>>;
@@ -53,7 +54,34 @@ public class CreatePollCommandValidator : AbstractValidator<CreatePollCommand>
                 .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
                 .WithMessage("each option needs a menu_item_id or a custom_name.");
         });
+
+        RuleFor(x => x.PollType)
+            .Must(IsValidPollType)
+            .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+            .WithMessage("poll_type is invalid. Use 'Lunch' or 'General'.");
+
+        When(x => IsGeneralPoll(x.PollType), () =>
+        {
+            RuleFor(x => x.Question)
+                .NotEmpty()
+                .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+                .WithMessage("question is required for a General poll.");
+
+            RuleForEach(x => x.Options).ChildRules(option =>
+            {
+                option.RuleFor(o => o.MenuItemId)
+                    .Null()
+                    .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+                    .WithMessage("General poll options must use custom_name only; menu_item_id is not allowed.");
+            });
+        });
     }
+
+    private static bool IsValidPollType(string? value)
+        => string.IsNullOrWhiteSpace(value) || Enum.TryParse<PollType>(value, ignoreCase: true, out _);
+
+    private static bool IsGeneralPoll(string? value)
+        => Enum.TryParse<PollType>(value, ignoreCase: true, out var type) && type == PollType.General;
 }
 
 public class CreatePollCommandHandler(
@@ -69,7 +97,13 @@ public class CreatePollCommandHandler(
     {
         var lunchDate = DateTime.Parse(command.LunchDate, CultureInfo.InvariantCulture, DateTimeStyles.None).Date;
 
-        if (await pollRepository.AnyOpenForDateAsync(lunchDate, cancellationToken))
+        var pollType = string.IsNullOrWhiteSpace(command.PollType)
+            ? PollType.Lunch
+            : Enum.Parse<PollType>(command.PollType, ignoreCase: true);
+
+        // Only one open Lunch poll per date; General polls can coexist freely.
+        if (pollType == PollType.Lunch
+            && await pollRepository.AnyOpenForDateAsync(lunchDate, PollType.Lunch, cancellationToken))
         {
             return Error.Conflict(
                 code: StatusCodes.Status409Conflict.ToString(),
@@ -77,22 +111,28 @@ public class CreatePollCommandHandler(
         }
 
         // Price snapshot: caterer price if set, otherwise the global setting.
-        var pricePerLunch = await settingsRepository.GetPricePerLunchAsync(cancellationToken);
-
+        // General polls never affect dues, so caterer is skipped and the snapshot stays 0.
+        var pricePerLunch = 0m;
         Caterer? caterer = null;
-        if (command.CatererId.HasValue)
-        {
-            caterer = await catererRepository.GetByIdAsync(command.CatererId.Value, cancellationToken);
-            if (caterer == null)
-            {
-                return Error.NotFound(
-                    code: StatusCodes.Status404NotFound.ToString(),
-                    description: "caterer not found.");
-            }
 
-            if (caterer.PricePerLunch > 0)
+        if (pollType == PollType.Lunch)
+        {
+            pricePerLunch = await settingsRepository.GetPricePerLunchAsync(cancellationToken);
+
+            if (command.CatererId.HasValue)
             {
-                pricePerLunch = caterer.PricePerLunch;
+                caterer = await catererRepository.GetByIdAsync(command.CatererId.Value, cancellationToken);
+                if (caterer == null)
+                {
+                    return Error.NotFound(
+                        code: StatusCodes.Status404NotFound.ToString(),
+                        description: "caterer not found.");
+                }
+
+                if (caterer.PricePerLunch > 0)
+                {
+                    pricePerLunch = caterer.PricePerLunch;
+                }
             }
         }
 
@@ -171,7 +211,7 @@ public class CreatePollCommandHandler(
             ? $"Who's in for lunch on {lunchDate:dd MMM yyyy}?"
             : command.Question.Trim();
 
-        var poll = new Poll(lunchDate, caterer?.Id, pricePerLunch, cutoffUtc, question, command.UserId)
+        var poll = new Poll(lunchDate, caterer?.Id, pricePerLunch, cutoffUtc, question, command.UserId, pollType)
         {
             Options = pollOptions,
             Caterer = caterer
@@ -180,7 +220,7 @@ public class CreatePollCommandHandler(
         await pollRepository.AddAsync(poll, cancellationToken);
 
         await notificationService.CreateForAllActiveUsersAsync(
-            title: "Lunch poll published",
+            title: pollType == PollType.General ? "New poll published" : "Lunch poll published",
             body: $"{question} Vote before the cutoff.",
             type: NotificationType.PollPublished,
             refId: poll.Id,

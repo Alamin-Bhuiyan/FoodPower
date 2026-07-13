@@ -73,6 +73,7 @@ public class GetSharedPollQueryHandler(
             caterer_name: poll.Caterer?.Name,
             price_per_lunch: poll.PricePerLunch,
             cutoff_at: poll.CutoffAt,
+            poll_type: poll.Type,
             status: poll.Status.ToString(),
             share_token: poll.ShareToken.ToString(),
             is_cutoff_passed: poll.IsCutoffPassed,

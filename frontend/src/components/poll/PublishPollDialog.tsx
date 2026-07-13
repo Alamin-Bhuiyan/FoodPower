@@ -14,11 +14,14 @@ import * as pollsService from '@/services/polls.service';
 import * as settingsService from '@/services/settings.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { toDateInputValue } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 interface PublishPollDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
+
+type PollType = 'Lunch' | 'General';
 
 const tomorrow = () => {
     const d = new Date();
@@ -29,6 +32,8 @@ const tomorrow = () => {
 const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const [pollType, setPollType] = useState<PollType>('Lunch');
+    const [question, setQuestion] = useState('');
     const [lunchDate, setLunchDate] = useState(tomorrow());
     const [catererId, setCatererId] = useState<string>('');
     const [selectedMenuIds, setSelectedMenuIds] = useState<number[]>([]);
@@ -37,12 +42,14 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
     const [customCutoff, setCustomCutoff] = useState('10:00');
     const [cutoffTouched, setCutoffTouched] = useState(false);
 
+    const isGeneral = pollType === 'General';
+
     const dayOfWeek = useMemo(() => new Date(lunchDate + 'T00:00:00').getDay(), [lunchDate]);
 
     const { data: caterersRes } = useQuery({
         queryKey: ['caterers'],
         queryFn: menuService.getCaterers,
-        enabled: open,
+        enabled: open && !isGeneral,
     });
     const caterers = caterersRes?.data ?? [];
 
@@ -62,16 +69,22 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
     const { data: menuRes, isLoading: menuLoading } = useQuery({
         queryKey: ['menu-items', catererId, dayOfWeek],
         queryFn: () => menuService.getMenuItems({ catererId: Number(catererId), day: dayOfWeek }),
-        enabled: open && !!catererId,
+        enabled: open && !isGeneral && !!catererId,
     });
     const menuItems = (menuRes?.data ?? []).filter(m => m.is_active !== false);
 
     const createMutation = useMutation({
         mutationFn: pollsService.createPoll,
-        onSuccess: () => {
+        onSuccess: (_res, variables) => {
             toast.success(t('publishPoll.publishedToast'));
-            queryClient.invalidateQueries({ queryKey: ['active-poll'] });
+            if ((variables.poll_type ?? 'Lunch').toLowerCase() === 'general') {
+                queryClient.invalidateQueries({ queryKey: ['general-active-polls'] });
+            } else {
+                queryClient.invalidateQueries({ queryKey: ['active-poll'] });
+            }
             onOpenChange(false);
+            setPollType('Lunch');
+            setQuestion('');
             setSelectedMenuIds([]);
             setCustomOptions([]);
             setCustomCutoff(defaultCutoff);
@@ -97,17 +110,23 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
 
     const handleSubmit = () => {
         if (!lunchDate) { toast.error(t('publishPoll.pickDate')); return; }
-        const options: pollsService.CreatePollOption[] = [
-            ...selectedMenuIds.map(id => ({ menu_item_id: id })),
-            ...customOptions.map(name => ({ custom_name: name })),
-        ];
+        if (isGeneral && !question.trim()) { toast.error(t('publishPoll.questionRequired')); return; }
+        // General polls take custom-named options only (no menu items, no caterer).
+        const options: pollsService.CreatePollOption[] = isGeneral
+            ? customOptions.map(name => ({ custom_name: name }))
+            : [
+                ...selectedMenuIds.map(id => ({ menu_item_id: id })),
+                ...customOptions.map(name => ({ custom_name: name })),
+            ];
         if (options.length < 1) { toast.error(t('publishPoll.addOneOption')); return; }
 
         createMutation.mutate({
             lunch_date: lunchDate,
-            caterer_id: catererId ? Number(catererId) : null,
+            caterer_id: !isGeneral && catererId ? Number(catererId) : null,
             options,
             cutoff_at: customCutoff ? `${lunchDate}T${customCutoff}:00` : null,
+            poll_type: pollType,
+            question: isGeneral ? question.trim() : undefined,
         });
     };
 
@@ -117,33 +136,69 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md rounded-2xl max-h-[90dvh] overflow-y-auto">
                 <DialogHeader className="text-left">
-                    <DialogTitle>{t('publishPoll.title')}</DialogTitle>
+                    <DialogTitle>{isGeneral ? t('publishPoll.titleGeneral') : t('publishPoll.title')}</DialogTitle>
                     <DialogDescription>
                         {t('publishPoll.subtitle', { time: defaultCutoff })}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
+                    {/* Poll type selector */}
                     <div className="space-y-1.5">
-                        <Label>{t('publishPoll.lunchDate')} <span className="text-muted-foreground font-normal">({dayLabel})</span></Label>
+                        <Label>{t('publishPoll.pollType')}</Label>
+                        <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-secondary">
+                            {(['Lunch', 'General'] as PollType[]).map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setPollType(type)}
+                                    className={cn(
+                                        'h-9 rounded-lg text-sm font-semibold transition-colors',
+                                        pollType === type
+                                            ? 'bg-card text-foreground shadow-sm'
+                                            : 'text-muted-foreground'
+                                    )}
+                                >
+                                    {type === 'Lunch' ? t('publishPoll.typeLunch') : t('publishPoll.typeOther')}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {isGeneral && (
+                        <div className="space-y-1.5">
+                            <Label>{t('publishPoll.question')}</Label>
+                            <Input
+                                placeholder={t('publishPoll.questionPlaceholder')}
+                                value={question}
+                                onChange={e => setQuestion(e.target.value)}
+                                className="h-11 rounded-xl"
+                            />
+                        </div>
+                    )}
+
+                    <div className="space-y-1.5">
+                        <Label>{isGeneral ? t('publishPoll.pollDate') : t('publishPoll.lunchDate')} <span className="text-muted-foreground font-normal">({dayLabel})</span></Label>
                         <Input type="date" value={lunchDate} onChange={e => setLunchDate(e.target.value)} className="h-11 rounded-xl" />
                     </div>
 
-                    <div className="space-y-1.5">
-                        <Label>{t('publishPoll.caterer')}</Label>
-                        <Select value={catererId} onValueChange={v => { setCatererId(v); setSelectedMenuIds([]); }}>
-                            <SelectTrigger className="h-11 rounded-xl">
-                                <SelectValue placeholder={t('publishPoll.selectCaterer')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {caterers.map(c => (
-                                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {!isGeneral && (
+                        <div className="space-y-1.5">
+                            <Label>{t('publishPoll.caterer')}</Label>
+                            <Select value={catererId} onValueChange={v => { setCatererId(v); setSelectedMenuIds([]); }}>
+                                <SelectTrigger className="h-11 rounded-xl">
+                                    <SelectValue placeholder={t('publishPoll.selectCaterer')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {caterers.map(c => (
+                                        <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
 
-                    {catererId && (
+                    {!isGeneral && catererId && (
                         <div className="space-y-1.5">
                             <Label>{t('publishPoll.setMenusFor', { day: dayLabel })}</Label>
                             {menuLoading ? (

@@ -15,7 +15,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
     public async Task<MyDuesResponse> GetMyDuesAsync(int userId, CancellationToken cancellationToken = default)
     {
         var lunches = await dbContext.Votes
-            .Where(v => v.UserId == userId)
+            .Where(v => v.UserId == userId && v.Poll!.Type == PollType.Lunch)
             .Select(v => new
             {
                 v.Poll!.LunchDate,
@@ -70,6 +70,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
             .ToListAsync(cancellationToken);
 
         var lunchTotals = await dbContext.Votes
+            .Where(v => v.Poll!.Type == PollType.Lunch)
             .GroupBy(v => v.UserId)
             .Select(g => new
             {
@@ -104,7 +105,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
         var end = start.AddDays(7);
 
         var rows = await dbContext.Votes
-            .Where(v => v.Poll!.LunchDate >= start && v.Poll.LunchDate < end)
+            .Where(v => v.Poll!.Type == PollType.Lunch && v.Poll.LunchDate >= start && v.Poll.LunchDate < end)
             .Select(v => new
             {
                 v.UserId,
@@ -116,7 +117,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
         var userIds = rows.Select(r => r.UserId).Distinct().ToList();
 
         var consumedTotals = await dbContext.Votes
-            .Where(v => userIds.Contains(v.UserId))
+            .Where(v => userIds.Contains(v.UserId) && v.Poll!.Type == PollType.Lunch)
             .GroupBy(v => v.UserId)
             .Select(g => new { UserId = g.Key, Amount = g.Sum(v => v.Poll!.PricePerLunch) })
             .ToDictionaryAsync(x => x.UserId, x => x.Amount, cancellationToken);

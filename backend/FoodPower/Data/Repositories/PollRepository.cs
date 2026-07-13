@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,10 +18,19 @@ public class PollRepository(ApplicationDbContext dbContext)
         => await DbContext.Polls
             .Include(p => p.Options.OrderBy(o => o.SortOrder))
             .Include(p => p.Caterer)
-            .Where(p => p.Status == PollStatus.Open)
+            .Where(p => p.Status == PollStatus.Open && p.Type == PollType.Lunch)
             .OrderByDescending(p => p.LunchDate)
             .ThenByDescending(p => p.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<List<Poll>> GetActiveGeneralAsync(CancellationToken cancellationToken = default)
+        => await DbContext.Polls
+            .Include(p => p.Options.OrderBy(o => o.SortOrder))
+            .Include(p => p.Caterer)
+            .Where(p => p.Status == PollStatus.Open && p.Type == PollType.General)
+            .OrderByDescending(p => p.LunchDate)
+            .ThenByDescending(p => p.CreatedAt)
+            .ToListAsync(cancellationToken);
 
     public async Task<Poll?> GetByIdWithOptionsAsync(int id, CancellationToken cancellationToken = default)
         => await DbContext.Polls
@@ -34,9 +44,11 @@ public class PollRepository(ApplicationDbContext dbContext)
             .Include(p => p.Caterer)
             .FirstOrDefaultAsync(p => p.ShareToken == shareToken, cancellationToken);
 
-    public async Task<bool> AnyOpenForDateAsync(DateTime lunchDate, CancellationToken cancellationToken = default)
+    public async Task<bool> AnyOpenForDateAsync(DateTime lunchDate, PollType type, CancellationToken cancellationToken = default)
         => await DbContext.Polls
-            .AnyAsync(p => p.Status == PollStatus.Open && p.LunchDate == lunchDate.Date, cancellationToken);
+            .AnyAsync(
+                p => p.Status == PollStatus.Open && p.LunchDate == lunchDate.Date && p.Type == type,
+                cancellationToken);
 
     public async Task<PaginatedList<Poll>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
