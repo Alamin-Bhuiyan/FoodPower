@@ -19,7 +19,7 @@ const sizeClasses = {
 };
 
 const resolveUrl = (path: string): string =>
-    /^https?:\/\//i.test(path) ? path : `${BASE_URL}${path}`;
+    /^https?:\/\//i.test(path) ? path : `${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
 
 /** Colored initials avatar — deterministic hue from the name; renders a photo when `imageUrl` is set. */
 const UserAvatar = ({ name, imageUrl, className, size = 'sm' }: UserAvatarProps) => {
