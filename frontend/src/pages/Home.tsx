@@ -11,6 +11,7 @@ import PublishPollDialog from '@/components/poll/PublishPollDialog';
 import ManageVotesSheet from '@/components/poll/ManageVotesSheet';
 import GeneralPollCard from '@/components/poll/GeneralPollCard';
 import * as pollsService from '@/services/polls.service';
+import * as settingsService from '@/services/settings.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { isAdmin, getStoredUser } from '@/lib/auth';
 import { formatBDT, formatDate, pollStatusLabel } from '@/lib/format';
@@ -46,6 +47,13 @@ const Home = () => {
     });
     const generalPolls = generalRes?.data ?? [];
 
+    // Payment details (bKash / bank) appended to the WhatsApp share message.
+    const { data: settingsRes } = useQuery({
+        queryKey: ['settings'],
+        queryFn: settingsService.getSettings,
+    });
+    const settings = settingsRes?.data;
+
     const voteMutation = useMutation({
         mutationFn: (optionId: number) => pollsService.vote(poll!.id, optionId),
         onSuccess: () => {
@@ -76,8 +84,17 @@ const Home = () => {
     const handleShare = () => {
         if (!poll) return;
         const pollUrl = `${window.location.origin}/poll/${poll.share_token}`;
-        const text = t('home.shareText', { date: formatDate(poll.lunch_date), url: pollUrl });
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        const lines = [t('home.shareText', { date: formatDate(poll.lunch_date), url: pollUrl })];
+
+        const bkash = settings?.bkash_number?.trim();
+        const bank = settings?.bank_account?.trim();
+        if (bkash || bank) {
+            lines.push('', t('home.sharePaymentReminder'));
+            if (bkash) lines.push(t('home.shareBkash', { number: bkash }));
+            if (bank) lines.push(t('home.shareBank', { account: bank }));
+        }
+
+        window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
     };
 
     if (isLoading) {
