@@ -347,6 +347,10 @@
       "didntGetCode": "Didn't get the code?",
       "resendIn": "Resend in {{s}}s",
       "resendCode": "Resend code",
+      "resending": "Sending…",
+      "quarantineTitle": "Didn't get the code? Check quarantine.",
+      "quarantineBody": "Corporate mailboxes sometimes hold our email. Open your quarantine, then release and allow this sender:",
+      "quarantineLink": "Open quarantine to release the email",
       "backToSignIn": "← Back to sign in"
     },
     "forgot": {

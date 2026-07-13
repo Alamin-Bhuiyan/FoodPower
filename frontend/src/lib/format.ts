@@ -33,14 +33,14 @@ export const formatDateTime = (value?: string | null): string => {
     if (!value) return '—';
     const d = new Date(value);
     if (isNaN(d.getTime())) return '—';
-    return `${d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', timeZone: TIME_ZONE })}, ${d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIME_ZONE })}`;
+    return `${d.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short', timeZone: TIME_ZONE })}, ${d.toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIME_ZONE })}`;
 };
 
 export const formatTime = (value?: string | null): string => {
     if (!value) return '—';
     const d = new Date(value);
     if (isNaN(d.getTime())) return '—';
-    return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TIME_ZONE });
+    return d.toLocaleTimeString(dateLocale(), { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIME_ZONE });
 };
 
 /** Normalize a payment/poll status that may arrive as a string or an enum int. */

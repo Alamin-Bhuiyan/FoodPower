@@ -25,6 +25,7 @@ const VerifyOtp = () => {
 
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [cooldown, setCooldown] = useState(RESEND_COOLDOWN);
 
     useEffect(() => {
@@ -63,7 +64,8 @@ const VerifyOtp = () => {
     };
 
     const handleResend = async () => {
-        if (!email || cooldown > 0) return;
+        if (!email || cooldown > 0 || isResending) return;
+        setIsResending(true);
         try {
             if (isForgotFlow) {
                 await authService.forgetPassword({ email });
@@ -74,6 +76,8 @@ const VerifyOtp = () => {
             setCooldown(RESEND_COOLDOWN);
         } catch (error: any) {
             toast.error(getErrorMessage(error, t('auth.verify.resendFailed')));
+        } finally {
+            setIsResending(false);
         }
     };
 
@@ -102,15 +106,34 @@ const VerifyOtp = () => {
                     {isLoading ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('auth.verify.verifying')}</>) : t('auth.verify.verify')}
                 </Button>
 
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                    <p className="font-semibold">{t('auth.verify.quarantineTitle')}</p>
+                    <p className="mt-1">{t('auth.verify.quarantineBody')}</p>
+                    <p className="mt-1 font-mono font-semibold">alamin84office@gmail.com</p>
+                    <a
+                        href="https://security.microsoft.com/quarantine"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-block font-semibold text-primary underline"
+                    >
+                        {t('auth.verify.quarantineLink')}
+                    </a>
+                </div>
+
                 <div className="text-center text-sm text-muted-foreground">
                     {t('auth.verify.didntGetCode')}{' '}
                     <button
                         type="button"
                         onClick={handleResend}
-                        disabled={cooldown > 0}
-                        className="font-semibold text-primary disabled:text-muted-foreground"
+                        disabled={cooldown > 0 || isResending}
+                        className="inline-flex items-center gap-1.5 font-semibold text-primary disabled:text-muted-foreground"
                     >
-                        {cooldown > 0 ? t('auth.verify.resendIn', { s: cooldown }) : t('auth.verify.resendCode')}
+                        {isResending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                        {isResending
+                            ? t('auth.verify.resending')
+                            : cooldown > 0
+                                ? t('auth.verify.resendIn', { s: cooldown })
+                                : t('auth.verify.resendCode')}
                     </button>
                 </div>
 

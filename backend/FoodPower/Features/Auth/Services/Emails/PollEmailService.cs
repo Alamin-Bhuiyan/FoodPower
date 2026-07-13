@@ -27,9 +27,16 @@ public class PollEmailService(
 {
     public async Task<int> QueuePollPublishedEmailsAsync(Poll poll, CancellationToken cancellationToken = default)
     {
+        // Admins should not receive the broadcast (they publish the poll themselves).
+        var adminRoleId = await dbContext.Roles
+            .Where(r => r.Name == PermissionRole.Admin)
+            .Select(r => r.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
         var recipients = await dbContext.Users
             .AsNoTracking()
             .Where(u => u.IsActive && u.EmailConfirmed && u.Email != null && u.Email != "")
+            .Where(u => !dbContext.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == adminRoleId))
             .Select(u => u.Email!)
             .ToListAsync(cancellationToken);
 
@@ -44,11 +51,11 @@ public class PollEmailService(
 
         var frontendBaseUrl = Env.GetString(
             "FRONTEND_BASE_URL",
-            configuration["AppSettings:FrontendBaseUrl"] ?? "http://localhost:5173").TrimEnd('/');
+            configuration["AppSettings:FrontendBaseUrl"] ?? "https://food-power.vercel.app").TrimEnd('/');
 
         var lunchDateText = poll.LunchDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
         var cutoffLocalText = TimeZoneHelper.FromUtc(poll.CutoffAt, timeZone)
-            .ToString("dd MMM yyyy HH:mm", CultureInfo.InvariantCulture);
+            .ToString("dd MMM yyyy hh:mm tt", CultureInfo.InvariantCulture);
         var optionNames = poll.Options.OrderBy(o => o.SortOrder).Select(o => o.Name).ToList();
         var pollUrl = $"{frontendBaseUrl}/poll/{poll.ShareToken}";
 

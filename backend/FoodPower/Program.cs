@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using FoodPower;
+using FoodPower.BuildingBlocks.Json;
 using FoodPower.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ builder.Services
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
         options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
     });
 
