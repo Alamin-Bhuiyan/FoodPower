@@ -1,45 +1,98 @@
 import { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { CalendarPlus, Share2, Users, Vote, Info, Trash2 } from 'lucide-react';
+import { CalendarPlus, ChevronDown, Plus, Users, Vote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import PollOptionCard from '@/components/poll/PollOptionCard';
-import CountdownChip from '@/components/poll/CountdownChip';
+import LunchPollCard from '@/components/poll/LunchPollCard';
 import PublishPollDialog from '@/components/poll/PublishPollDialog';
-import ManageVotesSheet from '@/components/poll/ManageVotesSheet';
 import GeneralPollCard from '@/components/poll/GeneralPollCard';
 import * as pollsService from '@/services/polls.service';
 import * as settingsService from '@/services/settings.service';
-import { getErrorMessage } from '@/services/axios/AxiosBase';
-import { isAdmin, getStoredUser } from '@/lib/auth';
-import { formatBDT, formatDate, pollStatusLabel } from '@/lib/format';
+import { isAdmin } from '@/lib/auth';
+import { formatDate, pollStatusLabel } from '@/lib/format';
 import { POLL_STATUS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+import type { AppSettings, Poll } from '@/types';
+
+interface LunchAccordionItemProps {
+    poll: Poll;
+    admin: boolean;
+    settings?: AppSettings;
+    expanded: boolean;
+    onToggle: () => void;
+}
+
+/** One row of the lunch-poll accordion: a compact summary that expands to the full card. */
+const LunchAccordionItem = ({ poll, admin, settings, expanded, onToggle }: LunchAccordionItemProps) => {
+    const { t } = useTranslation();
+    const isOpen = pollStatusLabel(poll.status) === POLL_STATUS.OPEN;
+    const totalVotes = poll.total_votes
+        ?? poll.options.reduce((sum, o) => sum + (o.vote_count ?? o.voters?.length ?? 0), 0);
+    const myChoice = poll.my_vote_option_id != null
+        ? poll.options.find(o => o.id === poll.my_vote_option_id)?.name
+        : null;
+
+    return (
+        <div className="rounded-2xl border bg-card overflow-hidden">
+            <button
+                type="button"
+                onClick={onToggle}
+                aria-expanded={expanded}
+                aria-label={expanded ? t('home.collapsePoll') : t('home.expandPoll')}
+                className="w-full flex items-center gap-3 p-4 text-left active:bg-secondary/40 transition-colors"
+            >
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold">{formatDate(poll.lunch_date)}</span>
+                        <span className={cn(
+                            'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold',
+                            isOpen ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'
+                        )}>
+                            {isOpen ? t('home.statusOpen') : t('home.statusClosed')}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 tabular-nums">
+                            <Users className="h-3 w-3" /> {t('home.votedCount', { count: totalVotes })}
+                        </span>
+                        {myChoice && <span className="truncate">· {t('home.votedFor', { name: myChoice })}</span>}
+                    </div>
+                </div>
+                <ChevronDown className={cn('h-5 w-5 text-muted-foreground shrink-0 transition-transform', expanded && 'rotate-180')} />
+            </button>
+            {expanded && (
+                <div className="px-4 pb-4">
+                    <LunchPollCard poll={poll} admin={admin} settings={settings} />
+                </div>
+            )}
+        </div>
+    );
+};
 
 const Home = () => {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
     const admin = isAdmin();
-    const user = getStoredUser();
     const [publishOpen, setPublishOpen] = useState(false);
-    const [manageOpen, setManageOpen] = useState(false);
+    const [expanded, setExpanded] = useState<Set<number>>(new Set());
+    const [seeded, setSeeded] = useState(false);
     const [, setTick] = useState(0);
 
-    // re-render every second so voting locks exactly at cutoff
+    // re-render every second so voting locks exactly at cutoff (per card)
     useEffect(() => {
-        const t = setInterval(() => setTick(x => x + 1), 1000);
-        return () => clearInterval(t);
+        const timer = setInterval(() => setTick(x => x + 1), 1000);
+        return () => clearInterval(timer);
     }, []);
 
-    const { data: pollRes, isLoading } = useQuery({
-        queryKey: ['active-poll'],
-        queryFn: pollsService.getActivePoll,
+    // The most recent 10 lunch polls, newest first — each a full poll.
+    const { data: lunchRes, isLoading } = useQuery({
+        queryKey: ['lunch-recent'],
+        queryFn: pollsService.getRecentLunchPolls,
         refetchInterval: 30000, // live vote counts
     });
-    const poll = pollRes?.data ?? null;
+    const lunchPolls = lunchRes?.data ?? [];
 
-    // Open General polls (never affect dues) shown below the lunch poll.
+    // Open General polls (never affect dues) shown below the lunch list.
     const { data: generalRes } = useQuery({
         queryKey: ['general-active-polls'],
         queryFn: pollsService.getActiveGeneralPolls,
@@ -54,48 +107,44 @@ const Home = () => {
     });
     const settings = settingsRes?.data;
 
-    const voteMutation = useMutation({
-        mutationFn: (optionId: number) => pollsService.vote(poll!.id, optionId),
-        onSuccess: () => {
-            toast.success(t('home.voteRecorded'));
-            queryClient.invalidateQueries({ queryKey: ['active-poll'] });
-            queryClient.invalidateQueries({ queryKey: ['my-dues'] });
-        },
-        onError: (error: any) => toast.error(getErrorMessage(error, t('home.voteFailed')), { duration: 6000 }),
-    });
-
-    const removeVoteMutation = useMutation({
-        mutationFn: () => pollsService.removeVote(poll!.id),
-        onSuccess: () => {
-            toast.success(t('home.voteRemoved'));
-            queryClient.invalidateQueries({ queryKey: ['active-poll'] });
-            queryClient.invalidateQueries({ queryKey: ['my-dues'] });
-        },
-        onError: (error: any) => toast.error(getErrorMessage(error, t('home.removeVoteFailed')), { duration: 6000 }),
-    });
-
-    const isOpen = poll ? pollStatusLabel(poll.status) === POLL_STATUS.OPEN : false;
-    const cutoffPassed = poll ? new Date(poll.cutoff_at).getTime() <= Date.now() : false;
-    const canVote = isOpen && !cutoffPassed;
-    const totalVotes = poll
-        ? (poll.total_votes ?? poll.options.reduce((sum, o) => sum + (o.vote_count ?? o.voters?.length ?? 0), 0))
-        : 0;
-
-    const handleShare = () => {
-        if (!poll) return;
-        const pollUrl = `${window.location.origin}/poll/${poll.share_token}`;
-        const lines = [t('home.shareText', { date: formatDate(poll.lunch_date), url: pollUrl })];
-
-        const bkash = settings?.bkash_number?.trim();
-        const bank = settings?.bank_account?.trim();
-        if (bkash || bank) {
-            lines.push('', t('home.sharePaymentReminder'));
-            if (bkash) lines.push(t('home.shareBkash', { number: bkash }));
-            if (bank) lines.push(t('home.shareBank', { account: bank }));
+    // Expand the newest poll by default, once the list first loads.
+    useEffect(() => {
+        if (!seeded && lunchPolls.length > 0) {
+            setExpanded(new Set([lunchPolls[0].id]));
+            setSeeded(true);
         }
+    }, [seeded, lunchPolls]);
 
-        window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
+    const toggle = (id: number) => {
+        setExpanded(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
     };
+
+    // "Other polls" section — only rendered when at least one General poll is open.
+    const generalSection = generalPolls.length > 0 ? (
+        <div className="space-y-3 pt-2">
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1">{t('home.otherPolls')}</h2>
+            {generalPolls.map(gp => (
+                <GeneralPollCard key={gp.id} poll={gp} admin={admin} />
+            ))}
+        </div>
+    ) : null;
+
+    // Floating action button — admin only — to publish a new lunch poll.
+    const fab = admin ? (
+        <button
+            type="button"
+            onClick={() => setPublishOpen(true)}
+            aria-label={t('home.addPoll')}
+            className="fixed bottom-20 right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-[0_6px_20px_rgba(249,115,22,0.45)] flex items-center justify-center active:scale-95 transition-transform"
+        >
+            <Plus className="h-6 w-6" strokeWidth={2.5} />
+        </button>
+    ) : null;
 
     if (isLoading) {
         return (
@@ -108,17 +157,7 @@ const Home = () => {
         );
     }
 
-    // "Other polls" section — only rendered when at least one General poll is open.
-    const generalSection = generalPolls.length > 0 ? (
-        <div className="space-y-3 pt-2">
-            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide px-1">{t('home.otherPolls')}</h2>
-            {generalPolls.map(gp => (
-                <GeneralPollCard key={gp.id} poll={gp} admin={admin} />
-            ))}
-        </div>
-    ) : null;
-
-    if (!poll) {
+    if (lunchPolls.length === 0) {
         return (
             <div className="space-y-4">
                 <div>
@@ -135,100 +174,32 @@ const Home = () => {
                             <CalendarPlus className="h-4 w-4" /> {t('home.publishPoll')}
                         </Button>
                     )}
-                    <PublishPollDialog open={publishOpen} onOpenChange={setPublishOpen} />
                 </div>
                 {generalSection}
+                {fab}
+                <PublishPollDialog open={publishOpen} onOpenChange={setPublishOpen} />
             </div>
         );
     }
 
     return (
         <div className="space-y-4">
-            {/* Poll header card */}
-            <div className="card p-4">
-                <div className="flex items-start justify-between gap-2">
-                    <div>
-                        <p className="text-xs font-semibold text-primary uppercase tracking-wide">{t('home.lunchPoll')}</p>
-                        <h2 className="text-lg font-bold mt-0.5">{formatDate(poll.lunch_date)}</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                            {poll.caterer_name ? `${poll.caterer_name} · ` : ''}{t('home.perLunch', { price: formatBDT(poll.price_per_lunch) })}
-                        </p>
-                    </div>
-                    <CountdownChip cutoffAt={poll.cutoff_at} />
-                </div>
-                <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    <span className="tabular-nums">{t('home.votedCount', { count: totalVotes })}</span>
-                </div>
-            </div>
-
-            {/* Options */}
             <div className="space-y-3">
-                {poll.options.map(option => (
-                    <PollOptionCard
-                        key={option.id}
-                        option={option}
-                        totalVotes={totalVotes}
-                        selected={poll.my_vote_option_id === option.id}
-                        disabled={!canVote || voteMutation.isPending || removeVoteMutation.isPending}
-                        onSelect={() => {
-                            if (!canVote) return;
-                            if (poll.my_vote_option_id === option.id) return;
-                            voteMutation.mutate(option.id);
-                        }}
-                        onShowVoters={admin ? () => setManageOpen(true) : undefined}
+                {lunchPolls.map(poll => (
+                    <LunchAccordionItem
+                        key={poll.id}
+                        poll={poll}
+                        admin={admin}
+                        settings={settings}
+                        expanded={expanded.has(poll.id)}
+                        onToggle={() => toggle(poll.id)}
                     />
                 ))}
             </div>
 
-            {/* After-cutoff note */}
-            {!canVote && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200">
-                    <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                    <p className="text-xs text-amber-800">
-                        {isOpen ? t('home.cutoffPassedNote') : t('home.closedByAdminNote')}
-                    </p>
-                </div>
-            )}
-
-            {/* Actions */}
-            <div className="grid grid-cols-1 gap-2">
-                <Button variant="outline" className="h-12 rounded-xl font-semibold bg-card" onClick={handleShare}>
-                    <Share2 className="h-4 w-4 text-green-600" /> {t('home.shareWhatsApp')}
-                </Button>
-                {admin && (
-                    <Button variant="secondary" className="h-12 rounded-xl font-semibold" onClick={() => setManageOpen(true)}>
-                        <Users className="h-4 w-4" /> {t('home.manageVotes')} {isOpen ? t('home.closePollSuffix') : ''}
-                    </Button>
-                )}
-            </div>
-
-            {user && poll.my_vote_option_id != null && (
-                <div className="space-y-2 pt-1">
-                    <p className="text-center text-xs text-muted-foreground">
-                        {t('home.yourVote')} <span className="font-semibold text-foreground">
-                            {poll.options.find(o => o.id === poll.my_vote_option_id)?.name}
-                        </span>
-                        {canVote && t('home.tapToChange')}
-                    </p>
-                    {canVote && (
-                        <Button
-                            variant="ghost"
-                            className="w-full h-10 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 text-sm font-medium"
-                            onClick={() => removeVoteMutation.mutate()}
-                            disabled={removeVoteMutation.isPending || voteMutation.isPending}
-                        >
-                            <Trash2 className="h-4 w-4" /> {t('home.removeVote')}
-                        </Button>
-                    )}
-                </div>
-            )}
-
             {generalSection}
-
-            {admin && (
-                <ManageVotesSheet open={manageOpen} onOpenChange={setManageOpen} poll={poll} isPollOpen={isOpen} />
-            )}
+            {fab}
+            <PublishPollDialog open={publishOpen} onOpenChange={setPublishOpen} />
         </div>
     );
 };

@@ -101,8 +101,12 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
 
     public async Task<WeeklySummaryResponse> GetWeeklySummaryAsync(DateTime weekStart, CancellationToken cancellationToken = default)
     {
+        // weekStart is the Monday of the target week. The range covers the five
+        // lunch days Monday-Friday: from Monday 00:00 up to but excluding the
+        // following Saturday 00:00. LunchDate is a calendar date, so this
+        // includes Mon/Tue/Wed/Thu/Fri.
         var start = weekStart.Date;
-        var end = start.AddDays(7);
+        var end = start.AddDays(5);
 
         var rows = await dbContext.Votes
             .Where(v => v.Poll!.Type == PollType.Lunch && v.Poll.LunchDate >= start && v.Poll.LunchDate < end)

@@ -14,5 +14,9 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
 
         builder.Property(x => x.IsActive)
             .HasDefaultValue(true);
+
+        builder.Property(x => x.ProfilePicturePath)
+            .HasColumnName("profile_picture")
+            .HasMaxLength(500);
     }
 }

@@ -32,6 +32,21 @@ public class PollRepository(ApplicationDbContext dbContext)
             .ThenByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
 
+    public async Task<List<Poll>> GetRecentLunchAsync(int take, CancellationToken cancellationToken = default)
+        => await DbContext.Polls
+            .Include(p => p.Options.OrderBy(o => o.SortOrder))
+            .Include(p => p.Caterer)
+            .Where(p => p.Type == PollType.Lunch)
+            .OrderByDescending(p => p.LunchDate)
+            .ThenByDescending(p => p.CreatedAt)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+    public async Task<List<Poll>> GetOpenLunchAsync(CancellationToken cancellationToken = default)
+        => await DbContext.Polls
+            .Where(p => p.Status == PollStatus.Open && p.Type == PollType.Lunch)
+            .ToListAsync(cancellationToken);
+
     public async Task<Poll?> GetByIdWithOptionsAsync(int id, CancellationToken cancellationToken = default)
         => await DbContext.Polls
             .Include(p => p.Options.OrderBy(o => o.SortOrder))

@@ -138,16 +138,13 @@ public static class DbInitializer
 
         var menuItems = new List<MenuItem>
         {
-            new(caterer.Id, DayOfWeek.Sunday, "Chicken Curry with Rice", "Steamed rice, chicken curry, dal, salad"),
-            new(caterer.Id, DayOfWeek.Sunday, "Vegetable Khichuri", "Khichuri with mixed vegetables and egg"),
-            new(caterer.Id, DayOfWeek.Monday, "Beef Tehari", "Beef tehari with cucumber salad"),
-            new(caterer.Id, DayOfWeek.Monday, "Fish Curry with Rice", "Rui fish curry, rice, dal, bhorta"),
-            new(caterer.Id, DayOfWeek.Tuesday, "Chicken Biryani", "Chicken biryani with borhani"),
-            new(caterer.Id, DayOfWeek.Tuesday, "Egg Curry with Rice", "Egg curry, rice, dal, vegetable bhaji"),
-            new(caterer.Id, DayOfWeek.Wednesday, "Morog Polao", "Morog polao with salad and chutney"),
-            new(caterer.Id, DayOfWeek.Wednesday, "Vegetable Fried Rice", "Fried rice with mixed vegetables and chicken fry"),
-            new(caterer.Id, DayOfWeek.Thursday, "Kacchi Biryani", "Mutton kacchi with jali kabab and borhani"),
-            new(caterer.Id, DayOfWeek.Thursday, "Plain Rice with Chicken Bhuna", "Rice, chicken bhuna, dal, bhorta")
+            new(caterer.Id, DayOfWeek.Monday, "সাদা ভাত, গরু", null),
+            new(caterer.Id, DayOfWeek.Monday, "সাদা ভাত, মুরগী", null),
+            new(caterer.Id, DayOfWeek.Tuesday, "সাদা ভাত, মাছ", null),
+            new(caterer.Id, DayOfWeek.Tuesday, "সাদা ভাত, মুরগী", null),
+            new(caterer.Id, DayOfWeek.Wednesday, "সাদা ভাত, গরু", null),
+            new(caterer.Id, DayOfWeek.Wednesday, "সাদা ভাত, মুরগী", null),
+            new(caterer.Id, DayOfWeek.Friday, "পোলাও, মুরগী", null)
         };
 
         await dbContext.MenuItems.AddRangeAsync(menuItems);

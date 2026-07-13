@@ -14,6 +14,10 @@ public class PollRoutes
     public const string GetActiveGeneralPollsName = "foodpower.polls.get_active_general_polls";
     public const string GetActiveGeneralPollsTemplate = "/api/polls/general-active";
 
+    public const string GetRecentLunchPollsMethod = "GET";
+    public const string GetRecentLunchPollsName = "foodpower.polls.get_recent_lunch_polls";
+    public const string GetRecentLunchPollsTemplate = "/api/polls/lunch-recent";
+
     public const string GetSharedPollMethod = "GET";
     public const string GetSharedPollName = "foodpower.polls.shared";
     public const string GetSharedPollTemplate = "/api/polls/shared/{shareToken}";

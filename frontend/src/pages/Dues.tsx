@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, ChevronLeft, ChevronRight, Receipt, UtensilsCrossed, Wallet, XCircle } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, ChevronRight as Chevron, Receipt, UtensilsCrossed, Wallet, XCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import UserAvatar from '@/components/common/UserAvatar';
 import * as duesService from '@/services/dues.service';
 import { isAdmin } from '@/lib/auth';
 import { formatBDT, formatDateShort, formatDateTime, currentWeekStart, addDays } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import type { MyDues, UserDues } from '@/types';
 
 const BalanceCard = ({ balance, lunchCount, loading }: { balance: number; lunchCount: number; loading?: boolean }) => {
     const { t } = useTranslation();
@@ -36,13 +38,9 @@ const BalanceCard = ({ balance, lunchCount, loading }: { balance: number; lunchC
     );
 };
 
-const MyDuesView = () => {
+/** Balance card + chronological history — shared by "my dues" and the admin per-user detail. */
+const DuesDetail = ({ dues, isLoading }: { dues?: MyDues; isLoading?: boolean }) => {
     const { t } = useTranslation();
-    const { data: duesRes, isLoading } = useQuery({
-        queryKey: ['my-dues'],
-        queryFn: duesService.getMyDues,
-    });
-    const dues = duesRes?.data;
     const history = dues?.history ?? [];
 
     return (
@@ -93,8 +91,43 @@ const MyDuesView = () => {
     );
 };
 
+const MyDuesView = () => {
+    const { data: duesRes, isLoading } = useQuery({
+        queryKey: ['my-dues'],
+        queryFn: duesService.getMyDues,
+    });
+
+    return <DuesDetail dues={duesRes?.data} isLoading={isLoading} />;
+};
+
+/** Admin: full dues breakdown + history for a selected user, in a side sheet. */
+const UserDuesSheet = ({ user, onClose }: { user: UserDues | null; onClose: () => void }) => {
+    const { data, isLoading } = useQuery({
+        queryKey: ['user-dues', user?.user_id],
+        queryFn: () => duesService.getUserDues(user!.user_id),
+        enabled: !!user,
+    });
+
+    return (
+        <Sheet open={!!user} onOpenChange={(o) => { if (!o) onClose(); }}>
+            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                <SheetHeader className="text-left">
+                    <SheetTitle className="flex items-center gap-2.5">
+                        {user && <UserAvatar name={user.full_name} size="md" />}
+                        {user?.full_name}
+                    </SheetTitle>
+                </SheetHeader>
+                <div className="mt-4">
+                    <DuesDetail dues={data?.data} isLoading={isLoading} />
+                </div>
+            </SheetContent>
+        </Sheet>
+    );
+};
+
 const AllUsersView = () => {
     const { t } = useTranslation();
+    const [selected, setSelected] = useState<UserDues | null>(null);
     const { data: allRes, isLoading } = useQuery({
         queryKey: ['all-dues'],
         queryFn: duesService.getAllDues,
@@ -106,25 +139,35 @@ const AllUsersView = () => {
     }
 
     return (
-        <ul className="space-y-2">
-            {rows.map(u => (
-                <li key={u.user_id} className="card px-3.5 py-3 flex items-center gap-3">
-                    <UserAvatar name={u.full_name} size="md" />
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">{u.full_name}</p>
-                        <p className="text-[11px] text-muted-foreground tabular-nums">
-                            {t('dues.lunchesPaid', { count: u.lunch_count, amount: formatBDT(u.total_paid) })}
-                        </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                        <p className={cn('text-sm font-bold tabular-nums', u.balance < 0 ? 'text-red-500' : 'text-green-600')}>
-                            {formatBDT(u.balance)}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">{u.balance < 0 ? t('dues.due') : t('dues.advance')}</p>
-                    </div>
-                </li>
-            ))}
-        </ul>
+        <>
+            <ul className="space-y-2">
+                {rows.map(u => (
+                    <li key={u.user_id}>
+                        <button
+                            type="button"
+                            onClick={() => setSelected(u)}
+                            className="card w-full px-3.5 py-3 flex items-center gap-3 text-left active:scale-[0.99] transition"
+                        >
+                            <UserAvatar name={u.full_name} size="md" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold truncate">{u.full_name}</p>
+                                <p className="text-[11px] text-muted-foreground tabular-nums">
+                                    {t('dues.lunchesPaid', { count: u.lunch_count, amount: formatBDT(u.total_paid) })}
+                                </p>
+                            </div>
+                            <div className="text-right shrink-0">
+                                <p className={cn('text-sm font-bold tabular-nums', u.balance < 0 ? 'text-red-500' : 'text-green-600')}>
+                                    {formatBDT(u.balance)}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">{u.balance < 0 ? t('dues.due') : t('dues.advance')}</p>
+                            </div>
+                            <Chevron className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+            <UserDuesSheet user={selected} onClose={() => setSelected(null)} />
+        </>
     );
 };
 
@@ -138,7 +181,8 @@ const WeeklySummaryView = () => {
     });
     const summary = weekRes?.data;
     const rows = summary?.rows ?? [];
-    const weekEnd = summary?.week_end ?? addDays(weekStart, 4);
+    // The lunch week runs Monday–Friday; Friday = Monday + 4.
+    const weekEnd = addDays(weekStart, 4);
 
     return (
         <div className="space-y-3">

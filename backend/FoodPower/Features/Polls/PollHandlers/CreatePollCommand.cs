@@ -101,15 +101,6 @@ public class CreatePollCommandHandler(
             ? PollType.Lunch
             : Enum.Parse<PollType>(command.PollType, ignoreCase: true);
 
-        // Only one open Lunch poll per date; General polls can coexist freely.
-        if (pollType == PollType.Lunch
-            && await pollRepository.AnyOpenForDateAsync(lunchDate, PollType.Lunch, cancellationToken))
-        {
-            return Error.Conflict(
-                code: StatusCodes.Status409Conflict.ToString(),
-                description: "an open poll already exists for this lunch date.");
-        }
-
         // Price snapshot: caterer price if set, otherwise the global setting.
         // General polls never affect dues, so caterer is skipped and the snapshot stays 0.
         var pricePerLunch = 0m;
@@ -216,6 +207,23 @@ public class CreatePollCommandHandler(
             Options = pollOptions,
             Caterer = caterer
         };
+
+        // Only one Lunch poll may be open at a time. Creating a new Lunch poll
+        // auto-closes any other currently-open Lunch poll. General polls are
+        // untouched and may stay open in parallel.
+        if (pollType == PollType.Lunch)
+        {
+            var openLunchPolls = await pollRepository.GetOpenLunchAsync(cancellationToken);
+            if (openLunchPolls.Count > 0)
+            {
+                foreach (var openPoll in openLunchPolls)
+                {
+                    openPoll.Status = PollStatus.Closed;
+                }
+
+                await pollRepository.UpdateRangeAsync(openLunchPolls, cancellationToken);
+            }
+        }
 
         await pollRepository.AddAsync(poll, cancellationToken);
 

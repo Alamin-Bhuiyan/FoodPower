@@ -31,7 +31,8 @@ public class GetUsersQueryHandler(ApplicationDbContext dbContext)
                 u.IsActive,
                 u.EmailConfirmed,
                 [],
-                u.CreatedAt))
+                u.CreatedAt,
+                u.ProfilePicturePath))
             .ToList();
     }
 }

@@ -10,4 +10,5 @@ public record UserResponse(
     bool is_active,
     bool email_confirmed,
     List<string> roles,
-    DateTime? created_at);
+    DateTime? created_at,
+    string? profile_picture);

@@ -14,5 +14,6 @@ public static class UserResponseFactory
             is_active: user.IsActive,
             email_confirmed: user.EmailConfirmed,
             roles: roles?.ToList() ?? [],
-            created_at: user.CreatedAt);
+            created_at: user.CreatedAt,
+            profile_picture: user.ProfilePicturePath);
 }

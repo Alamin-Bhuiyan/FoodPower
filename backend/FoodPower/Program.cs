@@ -82,6 +82,19 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/resources/screenshots"
 });
 
+var avatarPath = Path.Combine(Directory.GetCurrentDirectory(), "resources", "avatars");
+
+if (!Directory.Exists(avatarPath))
+{
+    Directory.CreateDirectory(avatarPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(avatarPath),
+    RequestPath = "/resources/avatars"
+});
+
 app.UseCors("FoodPowerFrontend");
 
 app.UseAuthentication();

@@ -15,6 +15,8 @@ export interface AuthUser {
     full_name: string;
     email: string;
     roles: string[];
+    /** Nullable relative path like "/resources/avatars/xxx.jpg"; prefix with API base URL to display. */
+    profile_picture?: string | null;
 }
 
 export interface LoginResult {

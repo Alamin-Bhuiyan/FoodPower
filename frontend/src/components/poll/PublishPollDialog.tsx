@@ -80,7 +80,10 @@ const PublishPollDialog = ({ open, onOpenChange }: PublishPollDialogProps) => {
             if ((variables.poll_type ?? 'Lunch').toLowerCase() === 'general') {
                 queryClient.invalidateQueries({ queryKey: ['general-active-polls'] });
             } else {
-                queryClient.invalidateQueries({ queryKey: ['active-poll'] });
+                // Creating a lunch poll auto-closes the previously open one server-side —
+                // refetch the recent list so both the new and now-closed polls update.
+                queryClient.invalidateQueries({ queryKey: ['lunch-recent'] });
+                queryClient.invalidateQueries({ queryKey: ['my-dues'] });
             }
             onOpenChange(false);
             setPollType('Lunch');

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Check, Loader2, Plus, Wallet, X } from 'lucide-react';
+import { Check, Loader2, Plus, Wallet, X, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,6 +37,18 @@ const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
     const [previewOpen, setPreviewOpen] = useState(false);
     const url = screenshotUrl(payment.screenshot_path);
     const isPending = paymentStatusLabel(payment.status) === PAYMENT_STATUS.PENDING;
+
+    const shareOnWhatsApp = () => {
+        const totalDays = payment.allocations?.reduce((s, a) => s + (a.days ?? 0), 0) ?? 0;
+        const names = payment.allocations
+            ?.map(a => a.beneficiary_name)
+            .filter(Boolean)
+            .join(', ');
+        const lines = [t('payments.sharePaidLine', { amount: formatBDT(payment.total_amount), count: totalDays })];
+        if (names) lines.push(t('payments.shareForLine', { names }));
+        if (payment.note) lines.push(`"${payment.note}"`);
+        window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
+    };
 
     return (
         <div className="card p-4 space-y-3">
@@ -81,6 +93,16 @@ const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
                             </DialogContent>
                         </Dialog>
                     </>
+                )}
+                {!adminView && (
+                    <button
+                        type="button"
+                        onClick={shareOnWhatsApp}
+                        aria-label={t('payments.shareOnWhatsApp')}
+                        className="ml-auto shrink-0 rounded-xl p-2.5 text-green-600 hover:bg-green-50 active:scale-95 transition border border-green-200"
+                    >
+                        <Share2 className="h-4 w-4" />
+                    </button>
                 )}
                 {adminView && isPending && (
                     <div className="flex gap-2 flex-1 justify-end">

@@ -9,4 +9,6 @@ public interface IFileService
         string base64,
         string subfolder,
         CancellationToken cancellationToken = default);
+
+    void DeleteFile(string? relativePath);
 }

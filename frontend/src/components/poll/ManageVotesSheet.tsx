@@ -53,8 +53,14 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
     const general = isGeneralPoll(poll);
 
     // General polls never touch dues, so only their own list is refreshed.
+    // Lunch polls refresh the recent-lunch list and dues (manual votes / closing affect dues).
     const invalidate = () => {
-        queryClient.invalidateQueries({ queryKey: general ? ['general-active-polls'] : ['active-poll'] });
+        if (general) {
+            queryClient.invalidateQueries({ queryKey: ['general-active-polls'] });
+        } else {
+            queryClient.invalidateQueries({ queryKey: ['lunch-recent'] });
+            queryClient.invalidateQueries({ queryKey: ['my-dues'] });
+        }
         queryClient.invalidateQueries({ queryKey: ['poll-results', poll.id] });
     };
 

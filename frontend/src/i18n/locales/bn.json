@@ -94,7 +94,13 @@
     "otherPolls": "অন্যান্য পোল",
     "generalPoll": "পোল",
     "noPaymentEffect": "পেমেন্টে প্রভাব নেই",
-    "shareGeneralText": "🗳️ পোল: {{question}} — এখানে ভোট দিন: {{url}}"
+    "shareGeneralText": "🗳️ পোল: {{question}} — এখানে ভোট দিন: {{url}}",
+    "addPoll": "নতুন পোল",
+    "expandPoll": "পোল খুলুন",
+    "collapsePoll": "পোল বন্ধ করুন",
+    "statusOpen": "চলছে",
+    "statusClosed": "বন্ধ",
+    "votedFor": "আপনি: {{name}}"
   },
   "menu": {
     "addItem": "যোগ করুন",
@@ -154,7 +160,13 @@
     "whereToPay": "কোথায় পেমেন্ট করবেন",
     "bkash": "বিকাশ",
     "sendMoneyNote": "সেন্ড মানি (ক্যাশ-আউট চার্জসহ পাঠান)",
-    "bankAccount": "ব্যাংক অ্যাকাউন্ট"
+    "bankAccount": "ব্যাংক অ্যাকাউন্ট",
+    "copy": "কপি করুন",
+    "copied": "কপি হয়েছে",
+    "copyFailed": "কপি করা যায়নি",
+    "shareOnWhatsApp": "হোয়াটসঅ্যাপে শেয়ার করুন",
+    "sharePaidLine": "✅ {{count}} দিনের লাঞ্চের জন্য {{amount}} পরিশোধ করা হয়েছে।",
+    "shareForLine": "যাদের জন্য: {{names}}"
   },
   "submitPayment": {
     "title": "পেমেন্ট জমা দিন",
@@ -200,7 +212,7 @@
     "weekly": "সাপ্তাহিক",
     "previousWeek": "আগের সপ্তাহ",
     "nextWeek": "পরের সপ্তাহ",
-    "lunchWeek": "রবি–বৃহস্পতি লাঞ্চ সপ্তাহ",
+    "lunchWeek": "সোম–শুক্র লাঞ্চ সপ্তাহ",
     "noLunchesTitle": "এই সপ্তাহে কোনো লাঞ্চ নেই",
     "noLunchesBody": "এই সপ্তাহের ভোটের রেকর্ড এখানে দেখা যাবে।",
     "weeklyCalc": "{{count}} × লাঞ্চ = {{amount}}",
@@ -217,7 +229,12 @@
     "newPassword": "নতুন পাসওয়ার্ড",
     "confirmNewPassword": "নতুন পাসওয়ার্ড নিশ্চিত করুন",
     "passwordChanged": "পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে।",
-    "passwordChangeFailed": "পাসওয়ার্ড পরিবর্তন করা যায়নি"
+    "passwordChangeFailed": "পাসওয়ার্ড পরিবর্তন করা যায়নি",
+    "changePhoto": "ছবি পরিবর্তন করুন",
+    "removePhoto": "ছবি সরান",
+    "photoUpdated": "ছবি আপডেট হয়েছে",
+    "photoFailed": "ছবি আপডেট করা যায়নি",
+    "photoTooLarge": "ছবি ৫ MB-এর কম হতে হবে"
   },
   "settings": {
     "backToProfile": "প্রোফাইলে ফিরে যান",

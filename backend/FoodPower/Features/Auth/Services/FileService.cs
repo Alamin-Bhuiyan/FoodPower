@@ -33,4 +33,30 @@ public class FileService : IFileService
 
         return $"resources/{subfolder}/{fileName}";
     }
+
+    public void DeleteFile(string? relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            return;
+        }
+
+        try
+        {
+            var normalized = relativePath
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar)
+                .TrimStart(Path.DirectorySeparatorChar);
+
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), normalized);
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+        }
+        catch
+        {
+            // best-effort delete; ignore failures.
+        }
+    }
 }

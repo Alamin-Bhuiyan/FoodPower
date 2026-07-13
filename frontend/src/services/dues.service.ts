@@ -11,6 +11,12 @@ export const getAllDues = async (): Promise<ApiResponse<UserDues[]>> => {
     return response.data;
 };
 
+/** Admin: full dues breakdown + history for a specific user. */
+export const getUserDues = async (userId: number): Promise<ApiResponse<MyDues>> => {
+    const response = await axiosClient.get(`/api/dues/user/${userId}`);
+    return response.data;
+};
+
 export const getWeeklySummary = async (weekStart: string): Promise<ApiResponse<WeeklySummary>> => {
     const response = await axiosClient.get('/api/dues/weekly-summary', { params: { weekStart } });
     return response.data;

@@ -10,6 +10,10 @@ public class DuesRoutes
     public const string GetAllDuesName = "foodpower.dues.list";
     public const string GetAllDuesTemplate = "/api/dues";
 
+    public const string GetUserDuesMethod = "GET";
+    public const string GetUserDuesName = "foodpower.dues.user";
+    public const string GetUserDuesTemplate = "/api/dues/user/{userId}";
+
     public const string GetWeeklySummaryMethod = "GET";
     public const string GetWeeklySummaryName = "foodpower.dues.weekly_summary";
     public const string GetWeeklySummaryTemplate = "/api/dues/weekly-summary";

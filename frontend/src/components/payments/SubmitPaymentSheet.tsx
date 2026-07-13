@@ -36,7 +36,7 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
     const fileRef = useRef<HTMLInputElement>(null);
 
     const [beneficiaries, setBeneficiaries] = useState<BeneficiaryRow[]>(
-        me ? [{ userId: me.id, name: me.full_name || 'Me', days: 5, isMe: true }] : []
+        me ? [{ userId: me.id, name: me.full_name || 'Me', days: 4, isMe: true }] : []
     );
     const [pickUserId, setPickUserId] = useState('');
     const [screenshot, setScreenshot] = useState<string | null>(null);
@@ -63,7 +63,7 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
     const addBeneficiary = (userIdStr: string) => {
         const user = users.find(u => u.id === Number(userIdStr));
         if (!user) return;
-        setBeneficiaries(prev => [...prev, { userId: user.id, name: user.full_name, days: 5, isMe: user.id === me?.id }]);
+        setBeneficiaries(prev => [...prev, { userId: user.id, name: user.full_name, days: 4, isMe: user.id === me?.id}]);
         setPickUserId('');
     };
 
@@ -99,7 +99,7 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
             onOpenChange(false);
             setScreenshot(null);
             setNote('');
-            if (me) setBeneficiaries([{ userId: me.id, name: me.full_name || 'Me', days: 5, isMe: true }]);
+            if (me) setBeneficiaries([{ userId: me.id, name: me.full_name || 'Me', days: 4, isMe: true }]);
         },
         onError: (error: any) => toast.error(getErrorMessage(error, t('submitPayment.submitFailed')), { duration: 6000 }),
     });

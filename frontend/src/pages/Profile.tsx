@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { BellOff, ChevronRight, KeyRound, Loader2, LogOut, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
+import { BellOff, Camera, ChevronRight, KeyRound, Loader2, LogOut, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,17 +13,61 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import UserAvatar from '@/components/common/UserAvatar';
 import * as authService from '@/services/auth.service';
 import * as notificationsService from '@/services/notifications.service';
+import * as usersService from '@/services/users.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
-import { getStoredUser, isAdmin } from '@/lib/auth';
+import { getStoredUser, setStoredUser, isAdmin } from '@/lib/auth';
+import type { AuthUser } from '@/types';
 import { changePasswordSchema, type ChangePasswordFormValues } from '@/lib/validations';
 import { formatDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const Profile = () => {
     const { t } = useTranslation();
-    const user = getStoredUser();
+    const queryClient = useQueryClient();
+    const [user, setUser] = useState<AuthUser | null>(getStoredUser());
     const admin = isAdmin();
     const [pwOpen, setPwOpen] = useState(false);
+    const photoInputRef = useRef<HTMLInputElement>(null);
+
+    const persistUser = (updated: AuthUser) => {
+        setStoredUser(updated);
+        setUser(updated);
+        queryClient.invalidateQueries({ queryKey: ['me'] });
+    };
+
+    const uploadPhotoMutation = useMutation({
+        mutationFn: (imageBase64: string) => usersService.uploadMyPhoto(imageBase64),
+        onSuccess: (res) => {
+            persistUser(res.data);
+            toast.success(t('profile.photoUpdated'));
+        },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('profile.photoFailed')), { duration: 6000 }),
+    });
+
+    const removePhotoMutation = useMutation({
+        mutationFn: () => usersService.removeMyPhoto(),
+        onSuccess: (res) => {
+            persistUser(res.data);
+            toast.success(t('profile.photoUpdated'));
+        },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('profile.photoFailed')), { duration: 6000 }),
+    });
+
+    const photoBusy = uploadPhotoMutation.isPending || removePhotoMutation.isPending;
+
+    const handlePhotoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error(t('profile.photoTooLarge'));
+            if (photoInputRef.current) photoInputRef.current.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => uploadPhotoMutation.mutate(reader.result as string);
+        reader.readAsDataURL(file);
+        if (photoInputRef.current) photoInputRef.current.value = '';
+    };
 
     const { data: notifRes } = useQuery({
         queryKey: ['notifications'],
@@ -52,7 +96,21 @@ const Profile = () => {
         <div className="space-y-4">
             {/* User card */}
             <div className="card p-5 flex items-center gap-4">
-                <UserAvatar name={user?.full_name} size="lg" />
+                <div className="relative shrink-0">
+                    <UserAvatar name={user?.full_name} imageUrl={user?.profile_picture} size="lg" />
+                    <button
+                        type="button"
+                        onClick={() => photoInputRef.current?.click()}
+                        disabled={photoBusy}
+                        className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center ring-2 ring-white shadow-sm active:scale-95 disabled:opacity-60"
+                        aria-label={t('profile.changePhoto')}
+                    >
+                        {photoBusy
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <Camera className="h-3.5 w-3.5" />}
+                    </button>
+                    <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+                </div>
                 <div className="min-w-0">
                     <h2 className="text-lg font-bold truncate">{user?.full_name || t('profile.userFallback')}</h2>
                     <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
@@ -63,6 +121,16 @@ const Profile = () => {
                         {admin && <ShieldCheck className="h-3 w-3" />}
                         {admin ? t('roles.admin') : t('roles.user')}
                     </span>
+                    {user?.profile_picture && (
+                        <button
+                            type="button"
+                            onClick={() => removePhotoMutation.mutate()}
+                            disabled={photoBusy}
+                            className="block mt-1.5 text-[11px] font-semibold text-red-600 disabled:opacity-60"
+                        >
+                            {t('profile.removePhoto')}
+                        </button>
+                    )}
                 </div>
             </div>
 

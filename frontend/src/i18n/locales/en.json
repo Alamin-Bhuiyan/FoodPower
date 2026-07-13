@@ -94,7 +94,13 @@
     "otherPolls": "Other polls",
     "generalPoll": "Poll",
     "noPaymentEffect": "No payment effect",
-    "shareGeneralText": "🗳️ Poll: {{question}} — vote here: {{url}}"
+    "shareGeneralText": "🗳️ Poll: {{question}} — vote here: {{url}}",
+    "addPoll": "Add poll",
+    "expandPoll": "Expand poll",
+    "collapsePoll": "Collapse poll",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "votedFor": "You: {{name}}"
   },
   "menu": {
     "addItem": "Add",
@@ -154,7 +160,13 @@
     "whereToPay": "Where to pay",
     "bkash": "bKash",
     "sendMoneyNote": "Send Money (include cash-out charge)",
-    "bankAccount": "Bank account"
+    "bankAccount": "Bank account",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Could not copy",
+    "shareOnWhatsApp": "Share on WhatsApp",
+    "sharePaidLine": "✅ Paid {{amount}} for {{count}} lunch day(s).",
+    "shareForLine": "For: {{names}}"
   },
   "submitPayment": {
     "title": "Submit payment",
@@ -200,7 +212,7 @@
     "weekly": "Weekly",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "lunchWeek": "Sun–Thu lunch week",
+    "lunchWeek": "Mon–Fri lunch week",
     "noLunchesTitle": "No lunches this week",
     "noLunchesBody": "Vote records for this week will appear here.",
     "weeklyCalc": "{{count}} × lunch = {{amount}}",
@@ -217,7 +229,12 @@
     "newPassword": "New password",
     "confirmNewPassword": "Confirm new password",
     "passwordChanged": "Password changed successfully.",
-    "passwordChangeFailed": "Failed to change password"
+    "passwordChangeFailed": "Failed to change password",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "photoUpdated": "Photo updated",
+    "photoFailed": "Failed to update photo",
+    "photoTooLarge": "Photo must be under 5 MB"
   },
   "settings": {
     "backToProfile": "Back to profile",

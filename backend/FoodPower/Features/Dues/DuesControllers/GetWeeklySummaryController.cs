@@ -21,18 +21,15 @@ public class GetWeeklySummaryController(ILogger<GetWeeklySummaryController> logg
         [FromQuery] string? weekStart,
         CancellationToken cancellationToken)
     {
-        DateTime start;
+        // A supplied value is interpreted as the Monday of the target week.
+        // When omitted, the handler defaults to the current week's Monday in the
+        // configured timezone (Asia/Dhaka).
+        DateTime? start = null;
 
         if (!string.IsNullOrWhiteSpace(weekStart)
             && DateTime.TryParse(weekStart, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
         {
             start = parsed.Date;
-        }
-        else
-        {
-            // Default to the current week starting on Sunday.
-            var today = DateTime.UtcNow.Date;
-            start = today.AddDays(-(int)today.DayOfWeek);
         }
 
         var query = new GetWeeklySummaryQuery(start);

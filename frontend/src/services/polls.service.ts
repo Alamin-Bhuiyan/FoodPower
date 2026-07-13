@@ -33,6 +33,12 @@ export const getActiveGeneralPolls = async (): Promise<ApiResponse<Poll[]>> => {
     return response.data;
 };
 
+/** The most recent 10 Lunch polls, newest first — each a full poll (same shape as getActivePoll's data). */
+export const getRecentLunchPolls = async (): Promise<ApiResponse<Poll[]>> => {
+    const response = await axiosClient.get('/api/polls/lunch-recent');
+    return response.data;
+};
+
 export const getSharedPoll = async (shareToken: string): Promise<ApiResponse<Poll>> => {
     const response = await axiosClient.get(`/api/polls/shared/${shareToken}`);
     return response.data;

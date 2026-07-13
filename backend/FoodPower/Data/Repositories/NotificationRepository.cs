@@ -15,7 +15,7 @@ public class NotificationRepository(ApplicationDbContext dbContext)
         => await DbContext.Notifications
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
-            .Take(100)
+            .Take(10)
             .ToListAsync(cancellationToken);
 
     public async Task<int> MarkAllReadAsync(int userId, CancellationToken cancellationToken = default)

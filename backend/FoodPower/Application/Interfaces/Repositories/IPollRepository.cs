@@ -12,6 +12,8 @@ public interface IPollRepository : IEfRepository<Poll>
 {
     Task<Poll?> GetActiveAsync(CancellationToken cancellationToken = default);
     Task<List<Poll>> GetActiveGeneralAsync(CancellationToken cancellationToken = default);
+    Task<List<Poll>> GetRecentLunchAsync(int take, CancellationToken cancellationToken = default);
+    Task<List<Poll>> GetOpenLunchAsync(CancellationToken cancellationToken = default);
     Task<Poll?> GetByIdWithOptionsAsync(int id, CancellationToken cancellationToken = default);
     Task<Poll?> GetByShareTokenAsync(Guid shareToken, CancellationToken cancellationToken = default);
     Task<bool> AnyOpenForDateAsync(DateTime lunchDate, PollType type, CancellationToken cancellationToken = default);

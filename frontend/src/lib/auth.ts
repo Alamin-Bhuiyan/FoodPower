@@ -32,6 +32,13 @@ export const setSession = (token: string, user: AuthUser) => {
     localStorage.setItem(STORAGE_KEYS.USER_ROLE, roles.includes(ROLES.ADMIN) ? ROLES.ADMIN : ROLES.USER);
 };
 
+/** Persist an updated user back to localStorage (e.g. after a profile photo change). */
+export const setStoredUser = (user: AuthUser) => {
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    localStorage.setItem(STORAGE_KEYS.USER_ID, String(user.id));
+    if (user.full_name) localStorage.setItem(STORAGE_KEYS.USER_NAME, user.full_name);
+};
+
 export const clearSession = () => {
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);

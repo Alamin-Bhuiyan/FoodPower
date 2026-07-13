@@ -81,11 +81,13 @@ export const toDateInputValue = (d: Date): string => {
     return `${y}-${m}-${day}`;
 };
 
-/** Start of the current lunch week (Sunday) as yyyy-MM-dd. */
+/** Start of the current lunch week (Monday) as yyyy-MM-dd, computed in Dhaka time. */
 export const currentWeekStart = (): string => {
     const now = new Date();
+    const day = dhakaDayOfWeek(); // 0 = Sun … 6 = Sat (Bangladesh time)
+    const diff = day === 0 ? 6 : day - 1; // days back to this Mon–Sun week's Monday
     const d = new Date(now);
-    d.setDate(now.getDate() - now.getDay()); // back to Sunday
+    d.setDate(now.getDate() - diff);
     return toDateInputValue(d);
 };
 

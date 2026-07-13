@@ -26,6 +26,20 @@ public static class Base64FileValidator
         return fileType is not null && allowedTypes.Contains(fileType, StringComparer.OrdinalIgnoreCase);
     }
 
+    public static bool IsWithinSizeLimit(string? base64String, long maxBytes)
+    {
+        if (string.IsNullOrWhiteSpace(base64String))
+            return false;
+
+        var parts = base64String.Split(',');
+        var base64Data = parts.Length > 1 ? parts[1] : parts[0];
+
+        var padding = base64Data.EndsWith("==") ? 2 : base64Data.EndsWith("=") ? 1 : 0;
+        var sizeInBytes = (base64Data.Length * 3L) / 4 - padding;
+
+        return sizeInBytes <= maxBytes;
+    }
+
     private static bool IsBase64(string base64)
         => base64.Length % 4 == 0 && Base64Regex.IsMatch(base64);
 
