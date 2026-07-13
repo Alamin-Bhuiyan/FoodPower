@@ -106,18 +106,43 @@ const VerifyOtp = () => {
                     {isLoading ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('auth.verify.verifying')}</>) : t('auth.verify.verify')}
                 </Button>
 
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-                    <p className="font-semibold">{t('auth.verify.quarantineTitle')}</p>
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+                    <p className="font-semibold text-sm">{t('auth.verify.quarantineTitle')}</p>
                     <p className="mt-1">{t('auth.verify.quarantineBody')}</p>
-                    <p className="mt-1 font-mono font-semibold">alamin84office@gmail.com</p>
-                    <a
-                        href="https://security.microsoft.com/quarantine"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-block font-semibold text-primary underline"
-                    >
-                        {t('auth.verify.quarantineLink')}
-                    </a>
+
+                    <ol className="mt-3 space-y-2">
+                        <li className="flex gap-2">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold">1</span>
+                            <span>
+                                {t('auth.verify.quarantineStep1')}{' '}
+                                <a
+                                    href="https://security.microsoft.com/quarantine"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-semibold text-primary underline break-all"
+                                >
+                                    security.microsoft.com/quarantine
+                                </a>
+                            </span>
+                        </li>
+                        <li className="flex gap-2">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold">2</span>
+                            <span>{t('auth.verify.quarantineStep2')}</span>
+                        </li>
+                        <li className="flex gap-2">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold">3</span>
+                            <span>
+                                {t('auth.verify.quarantineStep3')}{' '}
+                                <span className="font-mono font-semibold break-all">alamin84office@gmail.com</span>
+                            </span>
+                        </li>
+                        <li className="flex gap-2">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold">4</span>
+                            <span>{t('auth.verify.quarantineStep4')}</span>
+                        </li>
+                    </ol>
+
+                    <p className="mt-3 text-[11px] text-amber-800">{t('auth.verify.quarantineTip')}</p>
                 </div>
 
                 <div className="text-center text-sm text-muted-foreground">

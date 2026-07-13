@@ -349,8 +349,12 @@
       "resendCode": "Resend code",
       "resending": "Sending…",
       "quarantineTitle": "Didn't get the code? Check quarantine.",
-      "quarantineBody": "Corporate mailboxes sometimes hold our email. Open your quarantine, then release and allow this sender:",
-      "quarantineLink": "Open quarantine to release the email",
+      "quarantineBody": "If you use a work/office email, it may hold our message in quarantine. Release it like this:",
+      "quarantineStep1": "Open",
+      "quarantineStep2": "Sign in with your work email.",
+      "quarantineStep3": "Find the FoodPower email from",
+      "quarantineStep4": "Select it and click \"Release\" (choose \"Release and allow sender\" if offered), then come back and tap Resend code.",
+      "quarantineTip": "Tip: the code arrives instantly on personal email (Gmail, etc.).",
       "backToSignIn": "← Back to sign in"
     },
     "forgot": {
