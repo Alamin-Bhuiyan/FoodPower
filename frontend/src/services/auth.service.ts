@@ -55,6 +55,7 @@ export const extractLoginResult = (data: any): { token: string; user: AuthUser }
             full_name: rawUser.full_name ?? rawUser.fullName ?? '',
             email: rawUser.email ?? '',
             roles,
+            profile_picture: rawUser.profile_picture ?? rawUser.profilePicture ?? null,
         },
     };
 };
