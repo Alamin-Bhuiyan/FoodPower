@@ -134,9 +134,8 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                         ))}
                     </div>
 
-                    {/* Add manual vote */}
-                    {isPollOpen && (
-                        <div className="rounded-xl border bg-card p-4 space-y-3">
+                    {/* Add manual vote — allowed even after the poll is closed, for admin flexibility */}
+                    <div className="rounded-xl border bg-card p-4 space-y-3">
                             <div className="flex items-center gap-2">
                                 <UserPlus className="h-4 w-4 text-primary" />
                                 <h3 className="text-sm font-semibold">{t('manageVotes.addVoteForUser')}</h3>
@@ -173,8 +172,7 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                                     ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.adding')}</>)
                                     : t('manageVotes.addVote')}
                             </Button>
-                        </div>
-                    )}
+                    </div>
 
                     {/* Send poll emails (allowed for open and closed polls) */}
                     <Button
