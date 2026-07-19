@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Check, Loader2, Plus, Wallet, X, Share2 } from 'lucide-react';
+import { Banknote, Bell, Check, Landmark, Loader2, Plus, Smartphone, Wallet, X, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,7 @@ import SubmitPaymentSheet from '@/components/payments/SubmitPaymentSheet';
 import WhereToPayCard from '@/components/payments/WhereToPayCard';
 import UserAvatar from '@/components/common/UserAvatar';
 import * as paymentsService from '@/services/payments.service';
+import * as pushService from '@/services/push.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { BASE_URL } from '@/lib/config';
 import { isAdmin } from '@/lib/auth';
@@ -24,6 +25,24 @@ const screenshotUrl = (path?: string | null): string | null => {
     if (!path) return null;
     if (path.startsWith('http') || path.startsWith('data:')) return path;
     return `${BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
+const METHOD_META: Record<string, { labelKey: string; Icon: typeof Banknote }> = {
+    cash: { labelKey: 'payments.methodCash', Icon: Banknote },
+    bank_transfer: { labelKey: 'payments.methodBankTransfer', Icon: Landmark },
+    bkash: { labelKey: 'payments.methodBkash', Icon: Smartphone },
+};
+
+const MethodChip = ({ method }: { method?: string }) => {
+    const { t } = useTranslation();
+    const meta = method ? METHOD_META[method] : undefined;
+    if (!meta) return null;
+    const { labelKey, Icon } = meta;
+    return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+            <Icon className="h-3 w-3" /> {t(labelKey)}
+        </span>
+    );
 };
 
 const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
@@ -60,7 +79,10 @@ const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
                             <p className="text-xs font-semibold truncate">{payment.submitted_by_name}</p>
                         </div>
                     )}
-                    <p className="text-lg font-extrabold tabular-nums">{formatBDT(payment.total_amount)}</p>
+                    <div className="flex items-center gap-2">
+                        <p className="text-lg font-extrabold tabular-nums">{formatBDT(payment.total_amount)}</p>
+                        <MethodChip method={payment.payment_method} />
+                    </div>
                     <p className="text-[11px] text-muted-foreground">{formatDateTime(payment.created_at)}</p>
                 </div>
                 <StatusBadge status={payment.status} />
@@ -165,6 +187,12 @@ const Payments = () => {
         onError: (error: any) => toast.error(getErrorMessage(error, t('payments.rejectFailed')), { duration: 6000 }),
     });
 
+    const remindDueMutation = useMutation({
+        mutationFn: () => pushService.remindDue(),
+        onSuccess: (res) => { toast.success(res.data?.message || t('payments.reminderSentToast')); },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('payments.reminderFailed')), { duration: 6000 }),
+    });
+
     const skeletons = (
         <div className="space-y-3">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
@@ -208,7 +236,17 @@ const Payments = () => {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="my" className="mt-4">{myList}</TabsContent>
-                    <TabsContent value="approvals" className="mt-4">
+                    <TabsContent value="approvals" className="mt-4 space-y-3">
+                        <Button
+                            variant="outline"
+                            className="w-full h-11 rounded-xl font-semibold bg-card"
+                            disabled={remindDueMutation.isPending}
+                            onClick={() => remindDueMutation.mutate()}
+                        >
+                            {remindDueMutation.isPending
+                                ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('payments.remindingDue')}</>)
+                                : (<><Bell className="h-4 w-4" /> {t('payments.remindDue')}</>)}
+                        </Button>
                         {pendingLoading ? skeletons : pendingPayments.length === 0 ? (
                             <div className="empty-state">
                                 <Check />

@@ -8,12 +8,15 @@ using ErrorOr;
 using FluentValidation;
 using FoodPower.Application.Interfaces.Repositories;
 using FoodPower.Application.Interfaces.Services;
+using FoodPower.BuildingBlocks.Constants;
 using FoodPower.BuildingBlocks.Utilities;
 using FoodPower.Contracts.Responses.Polls;
+using FoodPower.Data;
 using FoodPower.Domain.Entities;
 using FoodPower.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodPower.Features.Polls.PollHandlers;
 
@@ -89,7 +92,9 @@ public class CreatePollCommandHandler(
     IMenuItemRepository menuItemRepository,
     ICatererRepository catererRepository,
     ISettingsRepository settingsRepository,
-    INotificationService notificationService)
+    INotificationService notificationService,
+    IPushService pushService,
+    ApplicationDbContext dbContext)
     : IRequestHandler<CreatePollCommand, ErrorOr<PollResponse>>
 {
     public async Task<ErrorOr<PollResponse>> Handle(
@@ -233,6 +238,38 @@ public class CreatePollCommandHandler(
             type: NotificationType.PollPublished,
             refId: poll.Id,
             cancellationToken: cancellationToken);
+
+        // Best-effort browser push to all active, confirmed non-admin users. Admins
+        // publish the poll themselves, so they are excluded (mirrors the email broadcast).
+        // Delivery is fire-and-forget inside the push service and must never block or
+        // fail poll creation.
+        try
+        {
+            var adminRoleId = await dbContext.Roles
+                .Where(r => r.Name == PermissionRole.Admin)
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            var pushRecipientIds = await dbContext.Users
+                .Where(u => u.IsActive && u.EmailConfirmed)
+                .Where(u => !dbContext.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == adminRoleId))
+                .Select(u => u.Id)
+                .ToListAsync(cancellationToken);
+
+            var cutoffLocalText = TimeZoneHelper.FromUtc(poll.CutoffAt, timeZone)
+                .ToString("dd MMM yyyy hh:mm tt", CultureInfo.InvariantCulture);
+
+            await pushService.SendToUsersAsync(
+                pushRecipientIds,
+                pollType == PollType.General ? question : "New lunch poll",
+                $"Vote before {cutoffLocalText}",
+                $"/poll/{poll.ShareToken}",
+                cancellationToken);
+        }
+        catch
+        {
+            // Push failure must not block poll creation.
+        }
 
         return PollResponseFactory.From(poll, [], null);
     }

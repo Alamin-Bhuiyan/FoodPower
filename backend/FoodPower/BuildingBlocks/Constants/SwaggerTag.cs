@@ -11,4 +11,5 @@ public static class SwaggerTag
     public const string Dues = "Dues";
     public const string Notifications = "Notifications";
     public const string Settings = "Settings";
+    public const string Push = "Push";
 }

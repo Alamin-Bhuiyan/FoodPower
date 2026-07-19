@@ -12,6 +12,7 @@ using FoodPower.Data.Repositories;
 using FoodPower.Domain.Entities;
 using FoodPower.Features.Auth.Services;
 using FoodPower.Features.Auth.Services.Emails;
+using FoodPower.Features.Auth.Services.Push;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -57,6 +58,13 @@ public static class DependencyInjection
             SenderAddress = Env.GetString("EMAIL_SENDER_ADDRESS", string.Empty),
             Password = Env.GetString("EMAIL_SENDER_PASSWORD", string.Empty),
             UseSsl = Env.GetBool("EMAIL_USE_SSL", true)
+        });
+
+        services.AddSingleton(_ => new PushSettings
+        {
+            PublicKey = Env.GetString("VAPID_PUBLIC_KEY", configuration["AppSettings:VapidPublicKey"] ?? string.Empty),
+            PrivateKey = Env.GetString("VAPID_PRIVATE_KEY", configuration["AppSettings:VapidPrivateKey"] ?? string.Empty),
+            Subject = Env.GetString("VAPID_SUBJECT", configuration["AppSettings:VapidSubject"] ?? "mailto:admin@foodpower.app")
         });
 
         services.AddPersistenceServices();
@@ -124,6 +132,7 @@ public static class DependencyInjection
         services.AddScoped<IPollEmailService, PollEmailService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IPushService, PushService>();
 
         services.AddMappings(typeof(DependencyInjection).Assembly);
 
@@ -142,6 +151,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<ISettingsRepository, SettingsRepository>();
         services.AddScoped<IDuesRepository, DuesRepository>();
+        services.AddScoped<IPushSubscriptionRepository, PushSubscriptionRepository>();
     }
 
     private static void AddMappings(this IServiceCollection services, Assembly? assembly = null)

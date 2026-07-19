@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Loader2, UserPlus, Lock, Mail } from 'lucide-react';
+import { Loader2, UserPlus, Lock, Mail, Bell, UtensilsCrossed } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import {
     AlertDialog,
@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import UserAvatar from '@/components/common/UserAvatar';
 import * as usersService from '@/services/users.service';
 import * as pollsService from '@/services/polls.service';
+import * as pushService from '@/services/push.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { isGeneralPoll } from '@/lib/format';
 import type { Poll } from '@/types';
@@ -84,6 +85,22 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
             toast.success(res.data?.message || t('manageVotes.emailsSendingToast'));
         },
         onError: (error: any) => toast.error(getErrorMessage(error, t('manageVotes.sendEmailsFailed')), { duration: 6000 }),
+    });
+
+    const remindMutation = useMutation({
+        mutationFn: () => pushService.remindPoll(poll.id),
+        onSuccess: (res) => {
+            toast.success(res.data?.message || t('manageVotes.reminderSentToast'));
+        },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('manageVotes.reminderFailed')), { duration: 6000 }),
+    });
+
+    const arrivalMutation = useMutation({
+        mutationFn: () => pollsService.announceLunchArrival(poll.id),
+        onSuccess: (res) => {
+            toast.success(res.data?.message || t('manageVotes.lunchArrivedToast'));
+        },
+        onError: (error: any) => toast.error(getErrorMessage(error, t('manageVotes.lunchArrivedFailed')), { duration: 6000 }),
     });
 
     const closeMutation = useMutation({
@@ -174,17 +191,42 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                             </Button>
                     </div>
 
-                    {/* Send poll emails (allowed for open and closed polls) */}
-                    <Button
-                        variant="outline"
-                        className="w-full h-11 rounded-xl font-semibold bg-card"
-                        disabled={sendEmailsMutation.isPending}
-                        onClick={() => setEmailConfirmOpen(true)}
-                    >
-                        {sendEmailsMutation.isPending
-                            ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.sendingEmails')}</>)
-                            : (<><Mail className="h-4 w-4" /> {t('manageVotes.sendEmails')}</>)}
-                    </Button>
+                    {/* Notify everyone: email + push reminder (allowed for open and closed polls) */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            className="h-11 rounded-xl font-semibold bg-card"
+                            disabled={sendEmailsMutation.isPending}
+                            onClick={() => setEmailConfirmOpen(true)}
+                        >
+                            {sendEmailsMutation.isPending
+                                ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.sendingEmails')}</>)
+                                : (<><Mail className="h-4 w-4" /> {t('manageVotes.sendEmails')}</>)}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-11 rounded-xl font-semibold bg-card"
+                            disabled={remindMutation.isPending}
+                            onClick={() => remindMutation.mutate()}
+                        >
+                            {remindMutation.isPending
+                                ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.sendingReminder')}</>)
+                                : (<><Bell className="h-4 w-4" /> {t('manageVotes.sendReminder')}</>)}
+                        </Button>
+                    </div>
+
+                    {/* Lunch arrived — notify everyone who ordered lunch today (lunch polls only) */}
+                    {!general && (
+                        <Button
+                            className="w-full h-11 rounded-xl font-semibold bg-green-600 hover:bg-green-700"
+                            disabled={arrivalMutation.isPending}
+                            onClick={() => arrivalMutation.mutate()}
+                        >
+                            {arrivalMutation.isPending
+                                ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.sendingArrival')}</>)
+                                : (<><UtensilsCrossed className="h-4 w-4" /> {t('manageVotes.lunchArrived')}</>)}
+                        </Button>
+                    )}
 
                     {/* Close poll */}
                     {isPollOpen && (

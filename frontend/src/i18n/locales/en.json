@@ -166,7 +166,14 @@
     "copyFailed": "Could not copy",
     "shareOnWhatsApp": "Share on WhatsApp",
     "sharePaidLine": "✅ Paid {{amount}} for {{count}} lunch day(s).",
-    "shareForLine": "For: {{names}}"
+    "shareForLine": "For: {{names}}",
+    "remindDue": "Send payment reminder",
+    "remindingDue": "Sending…",
+    "reminderSentToast": "Reminder sent.",
+    "reminderFailed": "Failed to send reminder",
+    "methodBkash": "bKash",
+    "methodBankTransfer": "Bank transfer",
+    "methodCash": "Cash"
   },
   "submitPayment": {
     "title": "Submit payment",
@@ -189,7 +196,13 @@
     "submitForApproval": "Submit {{amount}} for approval",
     "submittedToast": "Payment submitted for review!",
     "submitFailed": "Failed to submit payment",
-    "screenshotTooLarge": "Screenshot must be under 5 MB"
+    "screenshotTooLarge": "Screenshot must be under 5 MB",
+    "paymentMethod": "How did you pay?",
+    "methodBkash": "bKash",
+    "methodBankTransfer": "Bank transfer",
+    "methodCash": "Cash",
+    "cashHint": "Paying in cash? Hand it to the admin directly — a photo is optional.",
+    "uploadHintCash": "Tap to add a photo (optional)"
   },
   "dues": {
     "amountDue": "Amount due",
@@ -234,7 +247,14 @@
     "removePhoto": "Remove photo",
     "photoUpdated": "Photo updated",
     "photoFailed": "Failed to update photo",
-    "photoTooLarge": "Photo must be under 5 MB"
+    "photoTooLarge": "Photo must be under 5 MB",
+    "notifications": "Notifications",
+    "enableNotifications": "Enable notifications",
+    "notificationsOn": "Notifications enabled.",
+    "notificationsBlocked": "Allow notifications in your browser settings.",
+    "notificationsFailed": "Could not update notifications",
+    "iosInstallHint": "On iPhone, install the app to your Home Screen first to enable notifications.",
+    "notificationsUnavailable": "Notifications are not available in this browser right now. Try the installed app or a Chromium browser."
   },
   "settings": {
     "backToProfile": "Back to profile",
@@ -318,7 +338,15 @@
     "sendEmailsConfirmBody": "Every active user with a confirmed email will receive the poll email with the voting link and payment info.",
     "sendEmailsConfirmAction": "Send emails",
     "emailsSendingToast": "Emails are being sent.",
-    "sendEmailsFailed": "Failed to send emails"
+    "sendEmailsFailed": "Failed to send emails",
+    "sendReminder": "Send poll reminder",
+    "sendingReminder": "Sending…",
+    "reminderSentToast": "Reminder sent.",
+    "reminderFailed": "Failed to send reminder",
+    "lunchArrived": "Lunch arrived — notify everyone",
+    "sendingArrival": "Notifying…",
+    "lunchArrivedToast": "Everyone has been notified.",
+    "lunchArrivedFailed": "Failed to notify"
   },
   "auth": {
     "login": {

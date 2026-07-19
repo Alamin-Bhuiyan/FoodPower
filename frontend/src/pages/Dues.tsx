@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import UserAvatar from '@/components/common/UserAvatar';
 import * as duesService from '@/services/dues.service';
 import { isAdmin } from '@/lib/auth';
-import { formatBDT, formatDateShort, formatDateTime, currentWeekStart, addDays } from '@/lib/format';
+import { formatBDT, formatDate, formatDateShort, formatDateTime, currentWeekStart, addDays } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { MyDues, UserDues } from '@/types';
 
@@ -73,7 +73,7 @@ const DuesDetail = ({ dues, isLoading }: { dues?: MyDues; isLoading?: boolean })
                                         <p className="text-sm font-semibold truncate">
                                             {h.description || (isCredit ? t('dues.paymentApproved') : t('dues.lunch'))}
                                         </p>
-                                        <p className="text-[11px] text-muted-foreground">{formatDateTime(h.date)}</p>
+                                        <p className="text-[11px] text-muted-foreground">{isCredit ? formatDateTime(h.date) : formatDate(h.date)}</p>
                                     </div>
                                     <span className={cn(
                                         'text-sm font-bold tabular-nums shrink-0',

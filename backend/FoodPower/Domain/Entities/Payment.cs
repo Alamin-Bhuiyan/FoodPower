@@ -11,6 +11,7 @@ public class Payment
     public decimal TotalAmount { get; set; }
     public string ScreenshotPath { get; set; } = string.Empty;
     public string? Note { get; set; }
+    public PaymentMethod Method { get; set; } = PaymentMethod.Bkash;
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public int? ReviewedById { get; set; }
     public DateTime? ReviewedAt { get; set; }
@@ -24,12 +25,13 @@ public class Payment
     {
     }
 
-    public Payment(int submittedById, decimal totalAmount, string screenshotPath, string? note)
+    public Payment(int submittedById, decimal totalAmount, string screenshotPath, string? note, PaymentMethod method)
     {
         SubmittedById = submittedById;
         TotalAmount = totalAmount;
         ScreenshotPath = screenshotPath;
         Note = note;
+        Method = method;
         Status = PaymentStatus.Pending;
         CreatedAt = DateTime.UtcNow;
     }

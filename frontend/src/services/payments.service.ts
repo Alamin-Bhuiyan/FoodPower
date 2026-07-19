@@ -1,9 +1,12 @@
 import axiosClient from './axios/AxiosBase';
 import type { ApiResponse, Payment } from '@/types';
 
+export type PaymentMethod = 'cash' | 'bank_transfer' | 'bkash';
+
 export interface SubmitPaymentPayload {
-    screenshot: string; // base64 data URL
+    screenshot?: string; // base64 data URL; optional for cash payments
     note?: string;
+    payment_method: PaymentMethod;
     allocations: { beneficiary_user_id: number; days: number }[];
 }
 

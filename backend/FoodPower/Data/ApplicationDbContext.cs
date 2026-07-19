@@ -19,6 +19,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<PaymentAllocation> PaymentAllocations { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Setting> Settings { get; set; }
+    public DbSet<PushSubscription> PushSubscriptions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

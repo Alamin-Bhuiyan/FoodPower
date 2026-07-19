@@ -17,6 +17,7 @@ public record PaymentResponse(
     decimal total_amount,
     string screenshot_path,
     string? note,
+    string payment_method,
     string status,
     int? reviewed_by_id,
     string? reviewed_by_name,

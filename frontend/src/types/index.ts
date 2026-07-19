@@ -102,6 +102,7 @@ export interface Payment {
     total_amount: number;
     screenshot_path?: string | null;
     note?: string | null;
+    payment_method?: string;  // "cash" | "bank_transfer" | "bkash"
     status: string | number;  // "Pending" | "Approved" | "Rejected" (or enum int)
     reviewed_by_name?: string | null;
     reviewed_at?: string | null;

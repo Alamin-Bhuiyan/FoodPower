@@ -1,20 +1,22 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { BellOff, Camera, ChevronRight, KeyRound, Loader2, LogOut, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
+import { Bell, BellOff, Camera, ChevronRight, KeyRound, Loader2, LogOut, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import UserAvatar from '@/components/common/UserAvatar';
 import * as authService from '@/services/auth.service';
 import * as notificationsService from '@/services/notifications.service';
 import * as usersService from '@/services/users.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
+import { isPushSupported, getNotificationPermission, hasActiveSubscription, enablePush, disablePush } from '@/lib/push';
 import { getStoredUser, setStoredUser, isAdmin } from '@/lib/auth';
 import type { AuthUser } from '@/types';
 import { changePasswordSchema, type ChangePasswordFormValues } from '@/lib/validations';
@@ -28,6 +30,45 @@ const Profile = () => {
     const admin = isAdmin();
     const [pwOpen, setPwOpen] = useState(false);
     const photoInputRef = useRef<HTMLInputElement>(null);
+
+    // Web Push notifications
+    const [pushSupported] = useState(() => isPushSupported());
+    const [pushOn, setPushOn] = useState(false);
+    const [pushBusy, setPushBusy] = useState(false);
+
+    useEffect(() => {
+        if (!pushSupported) return;
+        hasActiveSubscription().then((active) => {
+            setPushOn(active && getNotificationPermission() === 'granted');
+        });
+    }, [pushSupported]);
+
+    const handleTogglePush = async (next: boolean) => {
+        setPushBusy(true);
+        try {
+            if (next) {
+                const result = await enablePush();
+                if (result === 'granted') {
+                    setPushOn(true);
+                    toast.success(t('profile.notificationsOn'));
+                } else if (result === 'denied') {
+                    setPushOn(false);
+                    toast.error(t('profile.notificationsBlocked'), { duration: 6000 });
+                } else {
+                    setPushOn(false);
+                    toast.error(t('profile.notificationsUnavailable'), { duration: 6000 });
+                }
+            } else {
+                await disablePush();
+                setPushOn(false);
+            }
+        } catch (error: any) {
+            setPushOn(false);
+            toast.error(getErrorMessage(error, t('profile.notificationsFailed')), { duration: 6000 });
+        } finally {
+            setPushBusy(false);
+        }
+    };
 
     const persistUser = (updated: AuthUser) => {
         setStoredUser(updated);
@@ -154,6 +195,31 @@ const Profile = () => {
                     </Link>
                 )}
             </div>
+
+            {/* Notifications toggle (Web Push) — hidden when the browser/platform can't support it */}
+            {pushSupported && (
+                <div className="card p-4">
+                    <div className="flex items-center gap-3">
+                        <span className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                            <Bell className="h-4 w-4 text-foreground" />
+                        </span>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold">{t('profile.notifications')}</p>
+                            <p className="text-xs text-muted-foreground">{t('profile.enableNotifications')}</p>
+                        </div>
+                        {pushBusy ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : (
+                            <Switch
+                                checked={pushOn}
+                                onCheckedChange={handleTogglePush}
+                                aria-label={t('profile.enableNotifications')}
+                            />
+                        )}
+                    </div>
+                    <p className="mt-3 text-[11px] text-muted-foreground">{t('profile.iosInstallHint')}</p>
+                </div>
+            )}
 
             {/* Recent notifications */}
             <div>

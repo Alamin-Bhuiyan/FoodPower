@@ -10,7 +10,8 @@ public class PaymentAllocationRequest
 
 public class CreatePaymentRequest
 {
-    public string screenshot { get; set; } = string.Empty;
+    public string? screenshot { get; set; }
     public string? note { get; set; }
+    public string? payment_method { get; set; }
     public List<PaymentAllocationRequest> allocations { get; set; } = [];
 }

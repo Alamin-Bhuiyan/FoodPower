@@ -13,6 +13,7 @@ public class PaymentMapping : IRegister
             .ConstructUsing(src => new CreatePaymentCommand(
                 src.screenshot,
                 src.note,
+                src.payment_method,
                 src.allocations.Select(a => new PaymentAllocationInput(a.beneficiary_user_id, a.days)).ToList(),
                 0
             ));

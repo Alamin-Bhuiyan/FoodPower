@@ -21,4 +21,8 @@ public class PaymentRoutes
     public const string RejectPaymentMethod = "POST";
     public const string RejectPaymentName = "foodpower.payments.reject";
     public const string RejectPaymentTemplate = "/api/payments/{id}/reject";
+
+    public const string RemindDueMethod = "POST";
+    public const string RemindDueName = "foodpower.payments.remind_due";
+    public const string RemindDueTemplate = "/api/payments/remind-due";
 }

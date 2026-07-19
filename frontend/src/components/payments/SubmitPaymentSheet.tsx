@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { ImagePlus, Loader2, Minus, Plus, X } from 'lucide-react';
+import { Banknote, ImagePlus, Landmark, Loader2, Minus, Plus, Smartphone, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,8 @@ import * as settingsService from '@/services/settings.service';
 import { getErrorMessage } from '@/services/axios/AxiosBase';
 import { getStoredUser } from '@/lib/auth';
 import { formatBDT } from '@/lib/format';
+import { cn } from '@/lib/utils';
+import type { PaymentMethod } from '@/services/payments.service';
 
 interface SubmitPaymentSheetProps {
     open: boolean;
@@ -39,8 +41,11 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
         me ? [{ userId: me.id, name: me.full_name || 'Me', days: 4, isMe: true }] : []
     );
     const [pickUserId, setPickUserId] = useState('');
+    const [method, setMethod] = useState<PaymentMethod>('bkash');
     const [screenshot, setScreenshot] = useState<string | null>(null);
     const [note, setNote] = useState('');
+
+    const isCash = method === 'cash';
 
     const { data: usersRes } = useQuery({
         queryKey: ['users'],
@@ -88,8 +93,9 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
 
     const submitMutation = useMutation({
         mutationFn: () => paymentsService.submitPayment({
-            screenshot: screenshot!,
+            screenshot: screenshot ?? undefined,
             note: note.trim() || undefined,
+            payment_method: method,
             allocations: beneficiaries.map(b => ({ beneficiary_user_id: b.userId, days: b.days })),
         }),
         onSuccess: () => {
@@ -99,12 +105,20 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
             onOpenChange(false);
             setScreenshot(null);
             setNote('');
+            setMethod('bkash');
             if (me) setBeneficiaries([{ userId: me.id, name: me.full_name || 'Me', days: 4, isMe: true }]);
         },
         onError: (error: any) => toast.error(getErrorMessage(error, t('submitPayment.submitFailed')), { duration: 6000 }),
     });
 
-    const canSubmit = beneficiaries.length > 0 && !!screenshot;
+    // Screenshot is proof for bKash / bank transfer; cash is handed over in person.
+    const canSubmit = beneficiaries.length > 0 && (isCash || !!screenshot);
+
+    const methods: { key: PaymentMethod; label: string; Icon: typeof Banknote }[] = [
+        { key: 'bkash', label: t('submitPayment.methodBkash'), Icon: Smartphone },
+        { key: 'bank_transfer', label: t('submitPayment.methodBankTransfer'), Icon: Landmark },
+        { key: 'cash', label: t('submitPayment.methodCash'), Icon: Banknote },
+    ];
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -171,12 +185,47 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
                         <span className="text-lg font-extrabold text-primary tabular-nums">{formatBDT(totalAmount)}</span>
                     </div>
 
-                    {/* Where to pay */}
-                    <WhereToPayCard />
+                    {/* Payment method */}
+                    <div className="space-y-2">
+                        <Label>{t('submitPayment.paymentMethod')}</Label>
+                        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t('submitPayment.paymentMethod')}>
+                            {methods.map(({ key, label, Icon }) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={method === key}
+                                    onClick={() => setMethod(key)}
+                                    className={cn(
+                                        'flex flex-col items-center justify-center gap-1.5 h-20 rounded-xl border-2 transition active:scale-95',
+                                        method === key
+                                            ? 'border-primary bg-primary/10 text-primary'
+                                            : 'border-border bg-card text-muted-foreground'
+                                    )}
+                                >
+                                    <Icon className="h-5 w-5" />
+                                    <span className="text-xs font-semibold">{label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Where to pay — only relevant for bKash / bank transfer */}
+                    {!isCash && <WhereToPayCard />}
+
+                    {/* Cash: hand over in person, screenshot optional */}
+                    {isCash && (
+                        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
+                            <p className="text-xs text-muted-foreground">{t('submitPayment.cashHint')}</p>
+                        </div>
+                    )}
 
                     {/* Screenshot */}
                     <div className="space-y-2">
-                        <Label>{t('submitPayment.screenshotLabel')}</Label>
+                        <Label>
+                            {t('submitPayment.screenshotLabel')}
+                            {isCash && <span className="text-muted-foreground font-normal"> {t('common.optional')}</span>}
+                        </Label>
                         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
                         {screenshot ? (
                             <div className="relative">
@@ -196,7 +245,9 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
                                 className="w-full h-28 rounded-xl border-2 border-dashed border-border bg-card flex flex-col items-center justify-center gap-1.5 text-muted-foreground active:bg-secondary/40"
                             >
                                 <ImagePlus className="h-6 w-6" />
-                                <span className="text-xs font-medium">{t('submitPayment.uploadHint')}</span>
+                                <span className="text-xs font-medium">
+                                    {isCash ? t('submitPayment.uploadHintCash') : t('submitPayment.uploadHint')}
+                                </span>
                             </button>
                         )}
                     </div>

@@ -78,3 +78,9 @@ export const sendPollEmails = async (pollId: number): Promise<ApiResponse<{ mess
     const response = await axiosClient.post(`/api/polls/${pollId}/send-emails`);
     return response.data;
 };
+
+/** Notify everyone who voted on this poll that the lunch has arrived. */
+export const announceLunchArrival = async (pollId: number): Promise<ApiResponse<{ message: string }>> => {
+    const response = await axiosClient.post(`/api/polls/${pollId}/announce-arrival`);
+    return response.data;
+};

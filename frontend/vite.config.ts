@@ -7,6 +7,11 @@ import path from "path";
 const plugins: PluginOption[] = [
   react(),
   VitePWA({
+    // InjectManifest lets us ship a custom service worker (src/sw.ts) that hosts
+    // the Web Push `push`/`notificationclick` handlers alongside Workbox precaching.
+    strategies: "injectManifest",
+    srcDir: "src",
+    filename: "sw.ts",
     registerType: "autoUpdate",
     injectRegister: "auto",
     includeAssets: ["favicon.svg", "apple-touch-icon.png"],
@@ -27,19 +32,12 @@ const plugins: PluginOption[] = [
         { src: "pwa-maskable-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
       ],
     },
-    workbox: {
+    injectManifest: {
       globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
-      // Never cache API calls — always hit the network so data stays fresh.
-      navigateFallbackDenylist: [/^\/api/],
-      runtimeCaching: [
-        {
-          urlPattern: ({ url }) => url.pathname.startsWith("/resources/"),
-          handler: "StaleWhileRevalidate",
-          options: { cacheName: "uploaded-images", expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 } },
-        },
-      ],
     },
-    devOptions: { enabled: false },
+    // Register the service worker in dev too, so Web Push can be tested on
+    // localhost (a secure context) instead of hanging with no SW registered.
+    devOptions: { enabled: true, type: "module" },
   }),
 ];
 

@@ -14,6 +14,7 @@ public static class PaymentResponseFactory
             total_amount: payment.TotalAmount,
             screenshot_path: payment.ScreenshotPath,
             note: payment.Note,
+            payment_method: PaymentMethodParser.ToWire(payment.Method),
             status: payment.Status.ToString(),
             reviewed_by_id: payment.ReviewedById,
             reviewed_by_name: payment.ReviewedBy?.FullName,

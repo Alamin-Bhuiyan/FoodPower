@@ -23,8 +23,9 @@ namespace FoodPower.Features.Payments.PaymentHandlers;
 public record PaymentAllocationInput(int BeneficiaryUserId, int Days);
 
 public record CreatePaymentCommand(
-    string Screenshot,
+    string? Screenshot,
     string? Note,
+    string? PaymentMethod,
     List<PaymentAllocationInput> Allocations,
     int UserId
 ) : IRequest<ErrorOr<PaymentResponse>>;
@@ -35,14 +36,27 @@ public class CreatePaymentCommandValidator : AbstractValidator<CreatePaymentComm
 
     public CreatePaymentCommandValidator()
     {
-        RuleFor(x => x.Screenshot)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty()
+        RuleFor(x => x.PaymentMethod)
+            .Must(value => PaymentMethodParser.TryParse(value, out _))
             .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
-            .WithMessage("screenshot is required.")
-            .Must(value => Base64FileValidator.IsValidBase64File(value, AllowedTypes))
-            .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
-            .WithMessage("screenshot must be a valid base64 encoded png, jpeg or webp image.");
+            .WithMessage("payment_method is invalid. Use 'cash', 'bank_transfer' or 'bkash'.");
+
+        // Screenshot is mandatory proof for bKash / bank transfer, optional for cash.
+        When(x => RequiresScreenshot(x.PaymentMethod), () =>
+        {
+            RuleFor(x => x.Screenshot)
+                .NotEmpty()
+                .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+                .WithMessage("screenshot is required for bkash and bank_transfer payments.");
+        });
+
+        When(x => !string.IsNullOrWhiteSpace(x.Screenshot), () =>
+        {
+            RuleFor(x => x.Screenshot)
+                .Must(value => Base64FileValidator.IsValidBase64File(value!, AllowedTypes))
+                .WithErrorCode(StatusCodes.Status400BadRequest.ToString())
+                .WithMessage("screenshot must be a valid base64 encoded png, jpeg or webp image.");
+        });
 
         RuleFor(x => x.Allocations)
             .NotEmpty()
@@ -62,6 +76,36 @@ public class CreatePaymentCommandValidator : AbstractValidator<CreatePaymentComm
                 .WithMessage("days must be greater than 0.");
         });
     }
+
+    private static bool RequiresScreenshot(string? paymentMethod)
+        => !PaymentMethodParser.TryParse(paymentMethod, out var method) || method != PaymentMethod.Cash;
+}
+
+/// <summary>
+/// Parses snake_case wire values ("cash", "bank_transfer", "bkash") into
+/// <see cref="PaymentMethod"/>. Null/blank falls back to bKash so stale PWA
+/// clients that predate payment methods keep working.
+/// </summary>
+public static class PaymentMethodParser
+{
+    public static bool TryParse(string? value, out PaymentMethod method)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            method = PaymentMethod.Bkash;
+            return true;
+        }
+
+        var normalized = value.Replace("_", string.Empty).Trim();
+        return Enum.TryParse(normalized, ignoreCase: true, out method) && Enum.IsDefined(method);
+    }
+
+    public static string ToWire(PaymentMethod method) => method switch
+    {
+        PaymentMethod.Cash => "cash",
+        PaymentMethod.BankTransfer => "bank_transfer",
+        _ => "bkash"
+    };
 }
 
 public class CreatePaymentCommandHandler(
@@ -69,6 +113,7 @@ public class CreatePaymentCommandHandler(
     ISettingsRepository settingsRepository,
     IFileService fileService,
     INotificationService notificationService,
+    IPushService pushService,
     ApplicationDbContext dbContext)
     : IRequestHandler<CreatePaymentCommand, ErrorOr<PaymentResponse>>
 {
@@ -100,7 +145,12 @@ public class CreatePaymentCommandHandler(
         // Amount is computed server-side: days x current price per lunch.
         var pricePerLunch = await settingsRepository.GetPricePerLunchAsync(cancellationToken);
 
-        var screenshotPath = await fileService.SaveBase64FileAsync(command.Screenshot, "screenshots", cancellationToken);
+        PaymentMethodParser.TryParse(command.PaymentMethod, out var paymentMethod);
+
+        // Screenshot is optional for cash payments; validated as required otherwise.
+        var screenshotPath = string.IsNullOrWhiteSpace(command.Screenshot)
+            ? string.Empty
+            : await fileService.SaveBase64FileAsync(command.Screenshot, "screenshots", cancellationToken);
 
         var allocations = command.Allocations
             .Select(a => new PaymentAllocation(a.BeneficiaryUserId, a.Days, a.Days * pricePerLunch))
@@ -110,7 +160,8 @@ public class CreatePaymentCommandHandler(
             command.UserId,
             allocations.Sum(a => a.Amount),
             screenshotPath,
-            command.Note)
+            command.Note,
+            paymentMethod)
         {
             Allocations = allocations
         };
@@ -146,6 +197,15 @@ public class CreatePaymentCommandHandler(
                     refId: payment.Id,
                     cancellationToken: cancellationToken);
             }
+
+            // Best-effort browser push to every admin (excluding the submitter).
+            // Delivery is fire-and-forget inside the push service.
+            await pushService.SendToUsersAsync(
+                adminIds,
+                "Payment awaiting approval",
+                $"{submitterName} submitted {amountText} BDT",
+                "/payments",
+                cancellationToken);
         }
         catch
         {

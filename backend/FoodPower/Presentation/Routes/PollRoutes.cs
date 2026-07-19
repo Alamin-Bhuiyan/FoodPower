@@ -49,4 +49,12 @@ public class PollRoutes
     public const string SendPollEmailsMethod = "POST";
     public const string SendPollEmailsName = "foodpower.polls.send_poll_emails";
     public const string SendPollEmailsTemplate = "/api/polls/{id}/send-emails";
+
+    public const string RemindPollMethod = "POST";
+    public const string RemindPollName = "foodpower.polls.remind";
+    public const string RemindPollTemplate = "/api/polls/{id}/remind";
+
+    public const string AnnounceArrivalMethod = "POST";
+    public const string AnnounceArrivalName = "foodpower.polls.announce_arrival";
+    public const string AnnounceArrivalTemplate = "/api/polls/{id}/announce-arrival";
 }

@@ -166,7 +166,14 @@
     "copyFailed": "কপি করা যায়নি",
     "shareOnWhatsApp": "হোয়াটসঅ্যাপে শেয়ার করুন",
     "sharePaidLine": "✅ {{count}} দিনের লাঞ্চের জন্য {{amount}} পরিশোধ করা হয়েছে।",
-    "shareForLine": "যাদের জন্য: {{names}}"
+    "shareForLine": "যাদের জন্য: {{names}}",
+    "remindDue": "পেমেন্ট রিমাইন্ডার পাঠান",
+    "remindingDue": "পাঠানো হচ্ছে…",
+    "reminderSentToast": "রিমাইন্ডার পাঠানো হয়েছে।",
+    "reminderFailed": "রিমাইন্ডার পাঠানো যায়নি",
+    "methodBkash": "বিকাশ",
+    "methodBankTransfer": "ব্যাংক ট্রান্সফার",
+    "methodCash": "ক্যাশ"
   },
   "submitPayment": {
     "title": "পেমেন্ট জমা দিন",
@@ -189,7 +196,13 @@
     "submitForApproval": "অনুমোদনের জন্য {{amount}} জমা দিন",
     "submittedToast": "পেমেন্ট পর্যালোচনার জন্য জমা হয়েছে!",
     "submitFailed": "পেমেন্ট জমা দেওয়া যায়নি",
-    "screenshotTooLarge": "স্ক্রিনশট ৫ MB-এর কম হতে হবে"
+    "screenshotTooLarge": "স্ক্রিনশট ৫ MB-এর কম হতে হবে",
+    "paymentMethod": "কীভাবে পেমেন্ট করেছেন?",
+    "methodBkash": "বিকাশ",
+    "methodBankTransfer": "ব্যাংক ট্রান্সফার",
+    "methodCash": "ক্যাশ",
+    "cashHint": "ক্যাশে দিচ্ছেন? টাকা সরাসরি অ্যাডমিনের হাতে দিন — ছবি দেওয়া ঐচ্ছিক।",
+    "uploadHintCash": "ছবি যোগ করতে চাপ দিন (ঐচ্ছিক)"
   },
   "dues": {
     "amountDue": "বাকি টাকা",
@@ -234,7 +247,14 @@
     "removePhoto": "ছবি সরান",
     "photoUpdated": "ছবি আপডেট হয়েছে",
     "photoFailed": "ছবি আপডেট করা যায়নি",
-    "photoTooLarge": "ছবি ৫ MB-এর কম হতে হবে"
+    "photoTooLarge": "ছবি ৫ MB-এর কম হতে হবে",
+    "notifications": "নোটিফিকেশন",
+    "enableNotifications": "নোটিফিকেশন চালু করুন",
+    "notificationsOn": "নোটিফিকেশন চালু হয়েছে।",
+    "notificationsBlocked": "আপনার ব্রাউজার সেটিংসে নোটিফিকেশন অনুমতি দিন।",
+    "notificationsFailed": "নোটিফিকেশন আপডেট করা যায়নি",
+    "iosInstallHint": "আইফোনে নোটিফিকেশন চালু করতে আগে অ্যাপটি হোম স্ক্রিনে ইনস্টল করুন।",
+    "notificationsUnavailable": "এই ব্রাউজারে এখন নোটিফিকেশন চালু করা যাচ্ছে না। ইনস্টল করা অ্যাপ বা ক্রোম ব্রাউজারে চেষ্টা করুন।"
   },
   "settings": {
     "backToProfile": "প্রোফাইলে ফিরে যান",
@@ -318,7 +338,15 @@
     "sendEmailsConfirmBody": "নিশ্চিত ইমেইলসহ সকল সক্রিয় ব্যবহারকারী ভোটের লিংক ও পেমেন্ট তথ্যসহ পোলের ইমেইল পাবেন।",
     "sendEmailsConfirmAction": "ইমেইল পাঠান",
     "emailsSendingToast": "ইমেইল পাঠানো হচ্ছে।",
-    "sendEmailsFailed": "ইমেইল পাঠানো যায়নি"
+    "sendEmailsFailed": "ইমেইল পাঠানো যায়নি",
+    "sendReminder": "পোলের রিমাইন্ডার পাঠান",
+    "sendingReminder": "পাঠানো হচ্ছে…",
+    "reminderSentToast": "রিমাইন্ডার পাঠানো হয়েছে।",
+    "reminderFailed": "রিমাইন্ডার পাঠানো যায়নি",
+    "lunchArrived": "লাঞ্চ এসেছে — সবাইকে জানান",
+    "sendingArrival": "জানানো হচ্ছে…",
+    "lunchArrivedToast": "সবাইকে জানানো হয়েছে।",
+    "lunchArrivedFailed": "জানানো যায়নি"
   },
   "auth": {
     "login": {

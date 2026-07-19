@@ -17,6 +17,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.TotalAmount).HasColumnName("total_amount").HasPrecision(18, 2);
         builder.Property(x => x.ScreenshotPath).HasColumnName("screenshot_path").HasMaxLength(500).IsRequired();
         builder.Property(x => x.Note).HasColumnName("note").HasMaxLength(500);
+        builder.Property(x => x.Method).HasColumnName("payment_method").HasDefaultValue(Domain.Enums.PaymentMethod.Bkash);
         builder.Property(x => x.Status).HasColumnName("status");
         builder.Property(x => x.ReviewedById).HasColumnName("reviewed_by_id");
         builder.Property(x => x.ReviewedAt).HasColumnName("reviewed_at");

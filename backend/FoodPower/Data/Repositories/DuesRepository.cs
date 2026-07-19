@@ -64,7 +64,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
     public async Task<List<UserDueResponse>> GetAllDuesAsync(CancellationToken cancellationToken = default)
     {
         var users = await dbContext.Users
-            .Where(u => u.IsActive)
+            .Where(u => u.IsActive && u.EmailConfirmed)
             .OrderBy(u => u.FullName)
             .Select(u => new { u.Id, u.FullName, u.Email })
             .ToListAsync(cancellationToken);
@@ -110,6 +110,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
 
         var rows = await dbContext.Votes
             .Where(v => v.Poll!.Type == PollType.Lunch && v.Poll.LunchDate >= start && v.Poll.LunchDate < end)
+            .Where(v => v.User!.IsActive && v.User.EmailConfirmed)
             .Select(v => new
             {
                 v.UserId,
