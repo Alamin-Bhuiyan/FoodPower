@@ -254,7 +254,9 @@
     "notificationsBlocked": "Allow notifications in your browser settings.",
     "notificationsFailed": "Could not update notifications",
     "iosInstallHint": "On iPhone, install the app to your Home Screen first to enable notifications.",
-    "notificationsUnavailable": "Notifications are not available in this browser right now. Try the installed app or a Chromium browser."
+    "notificationsUnavailable": "Notifications are not available in this browser right now. Try the installed app or a Chromium browser.",
+    "showAllNotifications": "Show all ({{count}})",
+    "showLessNotifications": "Show less"
   },
   "settings": {
     "backToProfile": "Back to profile",

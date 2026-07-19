@@ -114,7 +114,9 @@ const Profile = () => {
         queryKey: ['notifications'],
         queryFn: notificationsService.getNotifications,
     });
-    const notifications = (notifRes?.data ?? []).slice(0, 10);
+    const allNotifications = notifRes?.data ?? [];
+    const [showAllNotifications, setShowAllNotifications] = useState(false);
+    const notifications = showAllNotifications ? allNotifications : allNotifications.slice(0, 3);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<ChangePasswordFormValues>({
         resolver: zodResolver(changePasswordSchema),
@@ -231,15 +233,28 @@ const Profile = () => {
                         <p>{t('notificationsSheet.emptyBody')}</p>
                     </div>
                 ) : (
-                    <ul className="card divide-y overflow-hidden">
-                        {notifications.map(n => (
-                            <li key={n.id} className={cn('px-4 py-3', !n.is_read && 'bg-primary/5')}>
-                                <p className="text-sm font-semibold">{n.title}</p>
-                                {n.body && <p className="text-xs text-muted-foreground mt-0.5">{n.body}</p>}
-                                <p className="text-[11px] text-muted-foreground mt-1">{formatDateTime(n.created_at)}</p>
-                            </li>
-                        ))}
-                    </ul>
+                    <>
+                        <ul className="card divide-y overflow-hidden">
+                            {notifications.map(n => (
+                                <li key={n.id} className={cn('px-4 py-3', !n.is_read && 'bg-primary/5')}>
+                                    <p className="text-sm font-semibold">{n.title}</p>
+                                    {n.body && <p className="text-xs text-muted-foreground mt-0.5">{n.body}</p>}
+                                    <p className="text-[11px] text-muted-foreground mt-1">{formatDateTime(n.created_at)}</p>
+                                </li>
+                            ))}
+                        </ul>
+                        {allNotifications.length > 3 && (
+                            <button
+                                type="button"
+                                onClick={() => setShowAllNotifications(v => !v)}
+                                className="w-full mt-2 py-2 text-xs font-semibold text-primary rounded-xl hover:bg-primary/5 active:scale-[0.99] transition"
+                            >
+                                {showAllNotifications
+                                    ? t('profile.showLessNotifications')
+                                    : t('profile.showAllNotifications', { count: allNotifications.length })}
+                            </button>
+                        )}
+                    </>
                 )}
             </div>
 
