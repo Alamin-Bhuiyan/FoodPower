@@ -14,6 +14,7 @@ public record PaymentResponse(
     int id,
     int submitted_by_id,
     string? submitted_by_name,
+    string? submitted_by_picture,
     decimal total_amount,
     string screenshot_path,
     string? note,

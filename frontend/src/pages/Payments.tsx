@@ -75,7 +75,7 @@ const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
                 <div className="min-w-0">
                     {adminView && (
                         <div className="flex items-center gap-2 mb-1">
-                            <UserAvatar name={payment.submitted_by_name} size="xs" />
+                            <UserAvatar name={payment.submitted_by_name} imageUrl={payment.submitted_by_picture} size="xs" />
                             <p className="text-xs font-semibold truncate">{payment.submitted_by_name}</p>
                         </div>
                     )}

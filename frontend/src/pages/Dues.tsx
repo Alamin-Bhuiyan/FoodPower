@@ -113,7 +113,7 @@ const UserDuesSheet = ({ user, onClose }: { user: UserDues | null; onClose: () =
             <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
                 <SheetHeader className="text-left">
                     <SheetTitle className="flex items-center gap-2.5">
-                        {user && <UserAvatar name={user.full_name} size="md" />}
+                        {user && <UserAvatar name={user.full_name} imageUrl={user.profile_picture} size="md" />}
                         {user?.full_name}
                     </SheetTitle>
                 </SheetHeader>
@@ -148,7 +148,7 @@ const AllUsersView = () => {
                             onClick={() => setSelected(u)}
                             className="card w-full px-3.5 py-3 flex items-center gap-3 text-left active:scale-[0.99] transition"
                         >
-                            <UserAvatar name={u.full_name} size="md" />
+                            <UserAvatar name={u.full_name} imageUrl={u.profile_picture} size="md" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold truncate">{u.full_name}</p>
                                 <p className="text-[11px] text-muted-foreground tabular-nums">
@@ -214,7 +214,7 @@ const WeeklySummaryView = () => {
                 <ul className="space-y-2">
                     {rows.map(r => (
                         <li key={r.user_id} className="card px-3.5 py-3 flex items-center gap-3">
-                            <UserAvatar name={r.full_name} size="md" />
+                            <UserAvatar name={r.full_name} imageUrl={r.profile_picture} size="md" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold truncate">{r.full_name}</p>
                                 <p className="text-[11px] text-muted-foreground tabular-nums">

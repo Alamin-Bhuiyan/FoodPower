@@ -28,6 +28,7 @@ public static class PollResponseFactory
                         .Select(v => new VoterResponse(
                             v.UserId,
                             v.User?.FullName,
+                            v.User?.ProfilePicturePath,
                             v.IsManual,
                             v.CreatedAt))
                         .ToList());

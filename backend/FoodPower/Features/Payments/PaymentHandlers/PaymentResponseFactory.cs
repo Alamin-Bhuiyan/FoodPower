@@ -11,6 +11,7 @@ public static class PaymentResponseFactory
             id: payment.Id,
             submitted_by_id: payment.SubmittedById,
             submitted_by_name: payment.SubmittedBy?.FullName,
+            submitted_by_picture: payment.SubmittedBy?.ProfilePicturePath,
             total_amount: payment.TotalAmount,
             screenshot_path: payment.ScreenshotPath,
             note: payment.Note,

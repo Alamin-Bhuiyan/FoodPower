@@ -69,6 +69,12 @@ export const addManualVote = async (pollId: number, data: { user_id: number; pol
     return response.data;
 };
 
+/** Admin: remove any user's vote — works even after the cutoff or on closed polls. */
+export const removeUserVote = async (pollId: number, userId: number): Promise<ApiResponse> => {
+    const response = await axiosClient.delete(`/api/polls/${pollId}/manual-votes/${userId}`);
+    return response.data;
+};
+
 export const closePoll = async (pollId: number): Promise<ApiResponse> => {
     const response = await axiosClient.post(`/api/polls/${pollId}/close`);
     return response.data;

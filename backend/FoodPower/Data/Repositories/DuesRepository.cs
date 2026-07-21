@@ -66,7 +66,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
         var users = await dbContext.Users
             .Where(u => u.IsActive && u.EmailConfirmed)
             .OrderBy(u => u.FullName)
-            .Select(u => new { u.Id, u.FullName, u.Email })
+            .Select(u => new { u.Id, u.FullName, u.Email, u.ProfilePicturePath })
             .ToListAsync(cancellationToken);
 
         var lunchTotals = await dbContext.Votes
@@ -95,7 +95,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
             var consumed = lunchByUser.TryGetValue(u.Id, out var lc) ? lc.Amount : 0m;
             var paid = paidByUser.GetValueOrDefault(u.Id, 0m);
 
-            return new UserDueResponse(u.Id, u.FullName, u.Email, lunches, paid, paid - consumed);
+            return new UserDueResponse(u.Id, u.FullName, u.Email, u.ProfilePicturePath, lunches, paid, paid - consumed);
         }).ToList();
     }
 
@@ -115,6 +115,7 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
             {
                 v.UserId,
                 UserName = v.User!.FullName,
+                UserPicture = v.User!.ProfilePicturePath,
                 v.Poll!.PricePerLunch
             })
             .ToListAsync(cancellationToken);
@@ -134,10 +135,11 @@ public class DuesRepository(ApplicationDbContext dbContext) : IDuesRepository
             .ToDictionaryAsync(x => x.UserId, x => x.Amount, cancellationToken);
 
         var summaryRows = rows
-            .GroupBy(r => new { r.UserId, r.UserName })
+            .GroupBy(r => new { r.UserId, r.UserName, r.UserPicture })
             .Select(g => new WeeklyUserSummaryResponse(
                 g.Key.UserId,
                 g.Key.UserName,
+                g.Key.UserPicture,
                 g.Count(),
                 g.Sum(r => r.PricePerLunch),
                 paidTotals.GetValueOrDefault(g.Key.UserId, 0m)

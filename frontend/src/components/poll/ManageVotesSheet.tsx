@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Loader2, UserPlus, Lock, Mail, Bell, UtensilsCrossed } from 'lucide-react';
+import { Loader2, UserPlus, Lock, Mail, Bell, UtensilsCrossed, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import {
     AlertDialog,
@@ -38,6 +38,7 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
     const [manualUserId, setManualUserId] = useState<string>('');
     const [manualOptionId, setManualOptionId] = useState<string>('');
     const [emailConfirmOpen, setEmailConfirmOpen] = useState(false);
+    const [removeTarget, setRemoveTarget] = useState<{ userId: number; name: string } | null>(null);
 
     const { data: usersRes } = useQuery({
         queryKey: ['users'],
@@ -103,6 +104,19 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
         onError: (error: any) => toast.error(getErrorMessage(error, t('manageVotes.lunchArrivedFailed')), { duration: 6000 }),
     });
 
+    const removeVoteMutation = useMutation({
+        mutationFn: (userId: number) => pollsService.removeUserVote(poll.id, userId),
+        onSuccess: () => {
+            toast.success(t('manageVotes.voteRemovedToast', { name: removeTarget?.name ?? '' }));
+            setRemoveTarget(null);
+            invalidate();
+        },
+        onError: (error: any) => {
+            setRemoveTarget(null);
+            toast.error(getErrorMessage(error, t('manageVotes.removeVoteFailed')), { duration: 6000 });
+        },
+    });
+
     const closeMutation = useMutation({
         mutationFn: () => pollsService.closePoll(poll.id),
         onSuccess: () => {
@@ -138,11 +152,21 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                                     <ul className="space-y-1.5">
                                         {option.voters!.map(v => (
                                             <li key={v.user_id} className="flex items-center gap-2">
-                                                <UserAvatar name={v.full_name} size="xs" />
+                                                <UserAvatar name={v.full_name} imageUrl={v.profile_picture} size="xs" />
                                                 <span className="text-xs text-foreground">{v.full_name}</span>
                                                 {v.is_manual && (
                                                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">{t('manageVotes.manual')}</span>
                                                 )}
+                                                {/* Admin-only sheet: removal works even after the cutoff */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setRemoveTarget({ userId: v.user_id, name: v.full_name ?? '' })}
+                                                    disabled={removeVoteMutation.isPending}
+                                                    aria-label={t('manageVotes.removeVoteAria', { name: v.full_name })}
+                                                    className="ml-auto shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 active:scale-95 transition"
+                                                >
+                                                    <X className="h-3.5 w-3.5" />
+                                                </button>
                                             </li>
                                         ))}
                                     </ul>
@@ -258,6 +282,29 @@ const ManageVotesSheet = ({ open, onOpenChange, poll, isPollOpen }: ManageVotesS
                                 onClick={() => sendEmailsMutation.mutate()}
                             >
                                 {t('manageVotes.sendEmailsConfirmAction')}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Remove vote confirm */}
+                <AlertDialog open={!!removeTarget} onOpenChange={(o) => !o && setRemoveTarget(null)}>
+                    <AlertDialogContent className="rounded-2xl max-w-[calc(100%-2rem)]">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{t('manageVotes.removeVoteConfirmTitle')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {t('manageVotes.removeVoteConfirmBody', { name: removeTarget?.name ?? '' })}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel className="rounded-xl">{t('common.cancel')}</AlertDialogCancel>
+                            <AlertDialogAction
+                                className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => removeTarget && removeVoteMutation.mutate(removeTarget.userId)}
+                            >
+                                {removeVoteMutation.isPending
+                                    ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('manageVotes.removingVote')}</>)
+                                    : t('manageVotes.removeVoteConfirmAction')}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

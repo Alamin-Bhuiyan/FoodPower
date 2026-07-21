@@ -62,7 +62,7 @@ const PollOptionCard = ({ option, totalVotes, selected, disabled, onSelect, onSh
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); onShowVoters?.(); } }}
                     >
                         {voters.slice(0, 4).map(v => (
-                            <UserAvatar key={v.user_id} name={v.full_name} size="sm" />
+                            <UserAvatar key={v.user_id} name={v.full_name} imageUrl={v.profile_picture} size="sm" />
                         ))}
                         {voters.length > 4 && (
                             <span className="w-7 h-7 rounded-full bg-secondary text-secondary-foreground text-[10px] font-bold flex items-center justify-center ring-2 ring-white">

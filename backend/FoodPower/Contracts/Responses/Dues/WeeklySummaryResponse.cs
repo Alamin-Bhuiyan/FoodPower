@@ -6,6 +6,7 @@ namespace FoodPower.Contracts.Responses.Dues;
 public record WeeklyUserSummaryResponse(
     int user_id,
     string? full_name,
+    string? profile_picture,
     int lunch_count,
     decimal amount,
     bool paid);

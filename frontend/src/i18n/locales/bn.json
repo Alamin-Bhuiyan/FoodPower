@@ -348,7 +348,14 @@
     "lunchArrived": "লাঞ্চ এসেছে — সবাইকে জানান",
     "sendingArrival": "জানানো হচ্ছে…",
     "lunchArrivedToast": "সবাইকে জানানো হয়েছে।",
-    "lunchArrivedFailed": "জানানো যায়নি"
+    "lunchArrivedFailed": "জানানো যায়নি",
+    "voteRemovedToast": "{{name}}-এর ভোট মুছে ফেলা হয়েছে।",
+    "removeVoteFailed": "ভোট মুছতে ব্যর্থ হয়েছে",
+    "removeVoteAria": "{{name}}-এর ভোট মুছুন",
+    "removeVoteConfirmTitle": "ভোটটি মুছবেন?",
+    "removeVoteConfirmBody": "{{name}}-এর ভোট এই পোল থেকে মুছে যাবে। লাঞ্চ পোল হলে ওই দিনের পাওনাও বাদ যাবে। কাটঅফ সময়ের পরেও এটি কাজ করে।",
+    "removeVoteConfirmAction": "ভোট মুছুন",
+    "removingVote": "মুছে ফেলা হচ্ছে…"
   },
   "auth": {
     "login": {

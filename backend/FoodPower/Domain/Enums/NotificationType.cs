@@ -7,5 +7,6 @@ public enum NotificationType
     PaymentRejected = 3,
     ManualVoteAdded = 4,
     PaymentSubmitted = 5,
-    LunchArrived = 6
+    LunchArrived = 6,
+    ManualVoteRemoved = 7
 }

@@ -57,9 +57,11 @@ public class GetSharedPollQueryHandler(
                     o.SortOrder,
                     optionVotes.Count,
                     optionVotes
+                        // Shared poll page is public (deep link) — never expose photos there.
                         .Select(v => new VoterResponse(
                             v.UserId,
                             v.User?.FullName,
+                            null,
                             v.IsManual,
                             v.CreatedAt))
                         .ToList());

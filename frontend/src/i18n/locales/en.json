@@ -348,7 +348,14 @@
     "lunchArrived": "Lunch arrived — notify everyone",
     "sendingArrival": "Notifying…",
     "lunchArrivedToast": "Everyone has been notified.",
-    "lunchArrivedFailed": "Failed to notify"
+    "lunchArrivedFailed": "Failed to notify",
+    "voteRemovedToast": "Vote removed for {{name}}.",
+    "removeVoteFailed": "Failed to remove vote",
+    "removeVoteAria": "Remove {{name}}'s vote",
+    "removeVoteConfirmTitle": "Remove this vote?",
+    "removeVoteConfirmBody": "{{name}}'s vote will be removed from this poll. For lunch polls this also removes the day's due. This works even after the cutoff time.",
+    "removeVoteConfirmAction": "Remove vote",
+    "removingVote": "Removing…"
   },
   "auth": {
     "login": {

@@ -30,6 +30,7 @@ export interface UserSummary {
     full_name: string;
     email: string;
     is_active?: boolean;
+    profile_picture?: string | null;
 }
 
 /* ── Caterer & Menu ── */
@@ -55,6 +56,7 @@ export interface MenuItem {
 export interface PollVoter {
     user_id: number;
     full_name: string;
+    profile_picture?: string | null;
     is_manual?: boolean;
 }
 
@@ -99,6 +101,7 @@ export interface Payment {
     id: number;
     submitted_by_id: number;
     submitted_by_name?: string;
+    submitted_by_picture?: string | null;
     total_amount: number;
     screenshot_path?: string | null;
     note?: string | null;
@@ -128,6 +131,7 @@ export interface UserDues {
     user_id: number;
     full_name: string;
     email?: string;
+    profile_picture?: string | null;
     lunch_count: number;
     total_paid: number;
     balance: number;
@@ -136,6 +140,7 @@ export interface UserDues {
 export interface WeeklySummaryRow {
     user_id: number;
     full_name: string;
+    profile_picture?: string | null;
     lunch_count: number;
     amount: number;
     paid: boolean;

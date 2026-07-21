@@ -27,6 +27,7 @@ interface SubmitPaymentSheetProps {
 interface BeneficiaryRow {
     userId: number;
     name: string;
+    picture?: string | null;
     days: number;
     isMe: boolean;
 }
@@ -38,7 +39,7 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
     const fileRef = useRef<HTMLInputElement>(null);
 
     const [beneficiaries, setBeneficiaries] = useState<BeneficiaryRow[]>(
-        me ? [{ userId: me.id, name: me.full_name || 'Me', days: 4, isMe: true }] : []
+        me ? [{ userId: me.id, name: me.full_name || 'Me', picture: me.profile_picture, days: 4, isMe: true }] : []
     );
     const [pickUserId, setPickUserId] = useState('');
     const [method, setMethod] = useState<PaymentMethod>('bkash');
@@ -68,7 +69,7 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
     const addBeneficiary = (userIdStr: string) => {
         const user = users.find(u => u.id === Number(userIdStr));
         if (!user) return;
-        setBeneficiaries(prev => [...prev, { userId: user.id, name: user.full_name, days: 4, isMe: user.id === me?.id}]);
+        setBeneficiaries(prev => [...prev, { userId: user.id, name: user.full_name, picture: user.profile_picture, days: 4, isMe: user.id === me?.id}]);
         setPickUserId('');
     };
 
@@ -136,7 +137,7 @@ const SubmitPaymentSheet = ({ open, onOpenChange }: SubmitPaymentSheetProps) => 
                         <Label>{t('submitPayment.whoFor')}</Label>
                         {beneficiaries.map(b => (
                             <div key={b.userId} className="flex items-center gap-3 p-3 rounded-xl border bg-card">
-                                <UserAvatar name={b.name} size="md" />
+                                <UserAvatar name={b.name} imageUrl={b.picture} size="md" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold truncate">
                                         {b.isMe ? t('submitPayment.forMe') : b.name}

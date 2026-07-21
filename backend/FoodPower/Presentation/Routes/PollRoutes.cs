@@ -42,6 +42,10 @@ public class PollRoutes
     public const string ManualVoteName = "foodpower.polls.manual_vote";
     public const string ManualVoteTemplate = "/api/polls/{id}/manual-votes";
 
+    public const string AdminRemoveVoteMethod = "DELETE";
+    public const string AdminRemoveVoteName = "foodpower.polls.admin_remove_vote";
+    public const string AdminRemoveVoteTemplate = "/api/polls/{id}/manual-votes/{userId}";
+
     public const string ClosePollMethod = "POST";
     public const string ClosePollName = "foodpower.polls.close";
     public const string ClosePollTemplate = "/api/polls/{id}/close";
