@@ -66,6 +66,18 @@ public class PushService(
 
         var vapidDetails = new VapidDetails(pushSettings.Subject, pushSettings.PublicKey, pushSettings.PrivateKey);
 
+        // Lunch notifications are time-sensitive. Without "Urgency: high" push
+        // services treat messages as normal priority and Android Doze / iOS APNs
+        // defer them until the device wakes (users then get them only on app open).
+        // High urgency is allowed to wake the device for immediate display.
+        // TTL: after 4 hours an undelivered lunch notification is useless — drop it.
+        var options = new Dictionary<string, object>
+        {
+            ["vapidDetails"] = vapidDetails,
+            ["TTL"] = 14400,
+            ["headers"] = new Dictionary<string, object> { ["Urgency"] = "high" }
+        };
+
         // Snapshot the subscription data so the background task never touches the
         // request-scoped DbContext after the response has completed.
         var targets = subscriptions
@@ -84,7 +96,7 @@ public class PushService(
                 try
                 {
                     var subscription = new WebPushSubscription(endpoint, p256dh, auth);
-                    await client.SendNotificationAsync(subscription, payload, vapidDetails);
+                    await client.SendNotificationAsync(subscription, payload, options);
                 }
                 catch (WebPushException ex)
                 {
