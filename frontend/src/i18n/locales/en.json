@@ -173,7 +173,14 @@
     "reminderFailed": "Failed to send reminder",
     "methodBkash": "bKash",
     "methodBankTransfer": "Bank transfer",
-    "methodCash": "Cash"
+    "methodCash": "Cash",
+    "cancelPayment": "Cancel",
+    "cancelConfirmTitle": "Cancel this payment?",
+    "cancelConfirmBody": "Your pending payment of {{amount}} will be removed. You can submit a new payment anytime.",
+    "cancelConfirmAction": "Yes, cancel payment",
+    "cancelling": "Cancelling…",
+    "cancelledToast": "Payment cancelled.",
+    "cancelFailed": "Failed to cancel payment"
   },
   "submitPayment": {
     "title": "Submit payment",

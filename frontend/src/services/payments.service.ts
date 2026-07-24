@@ -25,6 +25,12 @@ export const getPayments = async (status?: string): Promise<ApiResponse<Payment[
     return response.data;
 };
 
+/** Cancel your own payment while it is still pending approval. */
+export const cancelPayment = async (id: number): Promise<ApiResponse> => {
+    const response = await axiosClient.delete(`/api/payments/${id}`);
+    return response.data;
+};
+
 export const approvePayment = async (id: number): Promise<ApiResponse> => {
     const response = await axiosClient.post(`/api/payments/${id}/approve`);
     return response.data;

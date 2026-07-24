@@ -14,6 +14,10 @@ public class PaymentRoutes
     public const string GetPaymentsName = "foodpower.payments.list";
     public const string GetPaymentsTemplate = "/api/payments";
 
+    public const string CancelPaymentMethod = "DELETE";
+    public const string CancelPaymentName = "foodpower.payments.cancel";
+    public const string CancelPaymentTemplate = "/api/payments/{id}";
+
     public const string ApprovePaymentMethod = "POST";
     public const string ApprovePaymentName = "foodpower.payments.approve";
     public const string ApprovePaymentTemplate = "/api/payments/{id}/approve";

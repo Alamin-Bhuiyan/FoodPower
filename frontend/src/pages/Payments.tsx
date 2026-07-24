@@ -45,11 +45,12 @@ const MethodChip = ({ method }: { method?: string }) => {
     );
 };
 
-const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
+const PaymentCard = ({ payment, adminView, onApprove, onReject, onCancel, busy }: {
     payment: Payment;
     adminView?: boolean;
     onApprove?: () => void;
     onReject?: () => void;
+    onCancel?: () => void;
     busy?: boolean;
 }) => {
     const { t } = useTranslation();
@@ -117,14 +118,28 @@ const PaymentCard = ({ payment, adminView, onApprove, onReject, busy }: {
                     </>
                 )}
                 {!adminView && (
-                    <button
-                        type="button"
-                        onClick={shareOnWhatsApp}
-                        aria-label={t('payments.shareOnWhatsApp')}
-                        className="ml-auto shrink-0 rounded-xl p-2.5 text-green-600 hover:bg-green-50 active:scale-95 transition border border-green-200"
-                    >
-                        <Share2 className="h-4 w-4" />
-                    </button>
+                    <div className="ml-auto flex items-center gap-2 shrink-0">
+                        {/* Pending payments can be cancelled by the submitter, then resubmitted */}
+                        {isPending && onCancel && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+                                disabled={busy}
+                                onClick={onCancel}
+                            >
+                                <X className="h-4 w-4" /> {t('payments.cancelPayment')}
+                            </Button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={shareOnWhatsApp}
+                            aria-label={t('payments.shareOnWhatsApp')}
+                            className="shrink-0 rounded-xl p-2.5 text-green-600 hover:bg-green-50 active:scale-95 transition border border-green-200"
+                        >
+                            <Share2 className="h-4 w-4" />
+                        </button>
+                    </div>
                 )}
                 {adminView && isPending && (
                     <div className="flex gap-2 flex-1 justify-end">
@@ -150,6 +165,7 @@ const Payments = () => {
     const [submitOpen, setSubmitOpen] = useState(false);
     const [rejectTarget, setRejectTarget] = useState<Payment | null>(null);
     const [rejectReason, setRejectReason] = useState('');
+    const [cancelTarget, setCancelTarget] = useState<Payment | null>(null);
 
     const { data: myRes, isLoading: myLoading } = useQuery({
         queryKey: ['my-payments'],
@@ -187,6 +203,20 @@ const Payments = () => {
         onError: (error: any) => toast.error(getErrorMessage(error, t('payments.rejectFailed')), { duration: 6000 }),
     });
 
+    const cancelMutation = useMutation({
+        mutationFn: (id: number) => paymentsService.cancelPayment(id),
+        onSuccess: () => {
+            toast.success(t('payments.cancelledToast'));
+            setCancelTarget(null);
+            invalidate();
+        },
+        onError: (error: any) => {
+            setCancelTarget(null);
+            toast.error(getErrorMessage(error, t('payments.cancelFailed')), { duration: 6000 });
+            invalidate();
+        },
+    });
+
     const remindDueMutation = useMutation({
         mutationFn: () => pushService.remindDue(),
         onSuccess: (res) => { toast.success(res.data?.message || t('payments.reminderSentToast')); },
@@ -207,7 +237,14 @@ const Payments = () => {
         </div>
     ) : (
         <div className="space-y-3">
-            {myPayments.map(p => <PaymentCard key={p.id} payment={p} />)}
+            {myPayments.map(p => (
+                <PaymentCard
+                    key={p.id}
+                    payment={p}
+                    busy={cancelMutation.isPending}
+                    onCancel={() => setCancelTarget(p)}
+                />
+            ))}
         </div>
     );
 
@@ -274,6 +311,30 @@ const Payments = () => {
             )}
 
             <SubmitPaymentSheet open={submitOpen} onOpenChange={setSubmitOpen} />
+
+            {/* Cancel own pending payment */}
+            <Dialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
+                <DialogContent className="max-w-md rounded-2xl">
+                    <DialogHeader className="text-left">
+                        <DialogTitle>{t('payments.cancelConfirmTitle')}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            {t('payments.cancelConfirmBody', { amount: formatBDT(cancelTarget?.total_amount ?? 0) })}
+                        </p>
+                        <Button
+                            variant="destructive"
+                            className="w-full h-11 rounded-xl font-semibold"
+                            disabled={cancelMutation.isPending}
+                            onClick={() => cancelTarget && cancelMutation.mutate(cancelTarget.id)}
+                        >
+                            {cancelMutation.isPending
+                                ? (<><Loader2 className="h-4 w-4 animate-spin" /> {t('payments.cancelling')}</>)
+                                : t('payments.cancelConfirmAction')}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Reject dialog */}
             <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>

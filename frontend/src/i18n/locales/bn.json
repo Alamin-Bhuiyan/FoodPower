@@ -173,7 +173,14 @@
     "reminderFailed": "রিমাইন্ডার পাঠানো যায়নি",
     "methodBkash": "বিকাশ",
     "methodBankTransfer": "ব্যাংক ট্রান্সফার",
-    "methodCash": "ক্যাশ"
+    "methodCash": "ক্যাশ",
+    "cancelPayment": "বাতিল",
+    "cancelConfirmTitle": "পেমেন্টটি বাতিল করবেন?",
+    "cancelConfirmBody": "আপনার {{amount}}-এর অপেক্ষমাণ পেমেন্টটি মুছে যাবে। চাইলে যেকোনো সময় নতুন পেমেন্ট জমা দিতে পারবেন।",
+    "cancelConfirmAction": "হ্যাঁ, বাতিল করুন",
+    "cancelling": "বাতিল হচ্ছে…",
+    "cancelledToast": "পেমেন্ট বাতিল হয়েছে।",
+    "cancelFailed": "পেমেন্ট বাতিল করা যায়নি"
   },
   "submitPayment": {
     "title": "পেমেন্ট জমা দিন",
